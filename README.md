@@ -1,6 +1,6 @@
 # NetAccounts
 
-**NetAccounts** is a Windows-only PowerShell module for managing local security groups and local user accounts on the current computer and remote computers. You can use it as a replacement for the Microsoft **LocalAccounts** module if you need to manage local security groups and local user accounts on remote computers.
+**NetAccounts** is a Windows-only PowerShell module for managing local security groups, local user accounts, and account policies on the current computer and remote computers. You can use it as a replacement for the Microsoft **LocalAccounts** module and the **net accounts** command if you need to manage local security groups, local user accounts, and account policies on remote computers.
 
 ## Copyright and Author
 
@@ -56,7 +56,11 @@ The **NetAccounts** module is similar in functionality to Microsoft's **LocalAcc
 | **Set-LocalGroup**          | **Set-NetLocalGroup**
 | **Set-LocalUser**           | **Set-NetLocalUser**
 
-The **NetAccounts** module also includes three additional commands that Microsoft's module does not provide:
+The **NetAccounts** module also includes some additional commands that Microsoft's module does not provide:
+
+* **Get-NetLocalAccountPolicy** - Gets account (password, account lockout, and forced logoff) policies.
+
+* **Set-NetLocalAccountPolicy** - Sets account (password, account lockout, and forced logoff) policies.
 
 * **Get-NetLocalAdminGroup** - Gets the local Administrators security group (SID S-1-5-32-544). Equivalent to:
 
@@ -76,7 +80,9 @@ This section describes the objects and types used in the **NetAccounts** module.
 
 ### Objects
 
-The **NetAccounts** module defines three types of objects, as follows:
+The **NetAccounts** module defines four types of objects, as follows:
+
+* `NetLocalAccountPolicy` - Contains account (password, account lockout, and forced logoff) policies; **Get-NetLocalAccountPolicy** outputs objects of this type
 
 * `NetPrincipal` - Base type; **Get-NetLocalGroupMember** and **Get-WellknownNetPrincipal** output objects of this type
 
@@ -84,7 +90,7 @@ The **NetAccounts** module defines three types of objects, as follows:
 
 * `NetLocalUserPrincipal` - Inherited from the `NetPrincipal` type; represents local user objects
 
-The type inheritance means that you can use an inherited type in place of the base type (but not vice-versa). For example, if a parameter requires a `NetPrincipal` object, you can also use a `NetLocalGroupPrincipal` object or a `NetLocalUserPrincipal` object for that parameter. The inverse is not true, however (i.e., if a parameter requires a `NetLocalGroupPrincipal` object, you cannot use a `NetPrincipal` object for that parameter).
+The inheritance of the `NetPrincipal` type means that you can use an inherited type in place of the base type (but not vice-versa). For example, if a parameter requires a `NetPrincipal` object, you can also use a `NetLocalGroupPrincipal` object or a `NetLocalUserPrincipal` object for that parameter. The inverse is not true, however (i.e., if a parameter requires a `NetLocalGroupPrincipal` object, you cannot use a `NetPrincipal` object for that parameter).
 
 ### Types
 
@@ -114,21 +120,25 @@ Below are the main differences between the **NetAccounts** module and Microsoft'
 
 * This module supports managing local security groups and local users on remote computers using the `-ComputerName` parameter.
 
+* This module supports management of account (password, account lockout, and forced logoff) policies. Microsoft's **LocalAccounts** module does not support management of these policies.
+
 * This module includes the following additional commands that are not available in Microsoft's module:
 
+  * **Get-NetLocalAccountPolicy**
   * **Get-NetLocalAdminGroup**
   * **Get-NetLocalAdminUser**
   * **Get-WellknownNetPrincipal**
+  * **Set-NetLocalAccountPolicy**
 
 * This module works in 32-bit PowerShell.
 
-* This module disallows management of local security groups and/or users on domain controller (DC) servers. This is primarily because "local" accounts on DCs are really domain accounts, and there are other more appropriate tools for managing domain accounts (such as Microsoft's **ActiveDirectory** module).
+* This module disallows management of local security groups, users, and account policies on domain controller (DC) servers. This is primarily because "local" accounts and policies on DCs are really domain accounts and policies, and there are other more appropriate tools for managing accounts and policies for domain accounts.
 
 * **Get-NetLocalGroupMember** does not provide a `-Member` parameter like **Get-LocalGroupMember**. (Workaround: Pipe its output to **Where-Object**.)
 
 * This module cannot determine if local user accounts are connected to Internet-based identities. The underlying reason for this limitation is that that **NetUserGetInfo** API function only supports retrieving this information from local user accounts on the current computer. (Workaround: Use the Microsoft **LocalAccounts** module cmdlets if you need this information about local user accounts on the current computer.) 
 
-* The `DateTime` properties in the `NetLocalUserPrincipal` object do not support timestamps later than 7 February 2106 6:28:14 UTC because the Windows APIs use 32-bit unsigned integers value to represent these timestamps. The APIs calculate these timestamps as the number of seconds since midnight 1 January 1970 UTC. The maximum possible value of a 32-bit unsigned integer is 4294967295 (0xFFFFFFFF in hexadecimal), which the APIs interpret to mean "forever." Using this interpretation, the latest possible timestamp is the value 4294967294 (0xFFFFFFFE in hexadecimal). When we add this number of seconds to midnight 1 January 1970 UTC, we get 7 February 2106 6:28:14 UTC. (This limitation is the unsigned 32-bit variation of the "year 2038 problem," which affects timestamps stored as signed 32-bit integers.)
+* The `DateTime` properties in the `NetLocalUserPrincipal` object do not support timestamps later than 7 February 2106 6:28:14 UTC because the Windows APIs use 32-bit unsigned integers value to represent these timestamps. The APIs calculate these timestamps as the number of seconds since midnight 1 January 1970 UTC. The maximum possible value of a 32-bit unsigned integer is 4294967295 (0xFFFFFFFF in hexadecimal), which the APIs interpret to mean "forever." Using this interpretation, the latest possible timestamp is the value 4294967294 (0xFFFFFFFE in hexadecimal). When we add this number of seconds to midnight 1 January 1970 UTC, we get 7 February 2106 6:28:14 UTC. (This limitation is the unsigned 32-bit integer variation of the "year 2038 problem," which affects timestamps stored as signed 32-bit integers.)
 
 ## Object Comparisons
 
@@ -138,53 +148,41 @@ This section documents the similarities and differences between the Microsoft **
 
 The **NetAccounts** and **LocalAccounts** modules differ in the properties that describe the objects themselves, as noted in the following table:
 
-| NetAccounts     | Type               | LocalAccounts     | Type              
-| -----------     | ----               | -------------     | ----              
-| `Type`          | `NetPrincipalType` | `ObjectClass`     | `String`          
-| `AuthorityName` | `String`           | `PrincipalSource` | `PrincipalSource` 
+| Module          | Property          | Property Type
+| ------          | --------          | -------------
+| `NetAccounts`   | `Type`            | `NetPrincipalType`
+| `LocalAccounts` | `ObjectClass`     | `String`
+| `NetAccounts`   | `AuthorityName`   | `String`
+| `LocalAccounts` | `PrincipalSource` | `PrincipalSource`
 
 The `Type` property in the **NetAccounts** module's object properties is analgous to the `ObjectClass` property in the **LocalAccounts** module's object properties, and the `AuthorityName` property in the **NetAccounts** module's object properties is analogous to the `PrincipalSource` property in the **LocalAccounts** module's object properties.
 
-## Local Security Groups
+## Comparison of Local Security Group Object Properties
 
-The following table compares the **NetAccounts** module `NetLocalGroupPrincipal` object's properties and the Microsoft **LocalAccounts** module `LocalGroup` object's properties.
+The following table lists the differences between the `NetLocalGroupPrincipal` object in the **NetAccounts** module and `LocalGroup` object in Microsoft's **LocalAccounts** module:
 
-| `NetLocalGroupPrincipal` | `LocalGroup`  | Type                 | Description
-| ------------------------ | ------------  | ----                 | -----------
-| `ComputerName`           | (N/A)         | `String`             | Name of computer where group exists
-| `Description`            | `Description` | `String`             | Group's description
-| `Name`                   | `Name`        | `String`             | Group's name
-| `SID`                    | `SID`         | `SecurityIdentifier` | Group's security identifier (SID)
+| `NetLocalGroupPrincipal` | `LocalGroup` | Type     | Description
+| ------------------------ | ------------ | ----     | -----------
+| `ComputerName`           | (N/A)        | `String` | Name of computer where group exists
 
 The `LocalGroup` object from the **LocalAccounts** module lacks the `ComputerName` property because the `LocalAccounts` module does not support managing local security groups on a remote computer.
 
 ## Comparison of Local User Object Properties
 
-The following table compares the **NetAccounts** module `NetLocalUserPrincipal` object's properties and the Microsoft **LocalAccounts** module `LocalUser` object's properties . The **NetAccounts** module supports more local user account properties than the Microsoft **LocalAccounts** module.
+The following table lists the differences between the `NetLocalUserPrincipal` object in the **NetAccounts** module and the `LocalUser` object in Microsoft's **LocalAccounts** module.
 
-| `NetLocalUserPrincipal` | `LocalUser`              | Type                 | Description
-| ----------------------- | -----------              | ----                 | -----------
-| `AccountExpires`        | `AccountExpires`         | `DateTime`           | Date and time when the account expires
-| `ChangePasswordAtLogon` | (N/A)                    | `Boolean`            | Whether the account's password must change at next logon
-| `ComputerName`          | (N/A)                    | `String`             | Computer where account name was resolved
-| `Description`           | `Description`            | `String`             | Account's description
-| `Enabled`               | `Enabled`                | `Boolean`            | Whether the account is enabled
-| `FullName`              | `FullName`               | `String`             | Full name of account
-| `HomeDirectory`         | (N/A)                    | `String`             | Path of account's home directory
-| `HomeDrive`             | (N/A)                    | `String`             | Drive letter of account's home drive
-| `LastLogon`             | `LastLogon`              | `DateTime`           | Date and time of last logon
-| `Name`                  | `Name`                   | `String`             | Account's name
-| `PasswordChangeable`    | `PasswordChangeableDate` | `DateTime`           | Date and time when the account's password can be changed
-| `PasswordExpires`       | `PasswordExpires`        | `DateTime`           | Date and time when the account's password expires
-| `PasswordLastSet`       | `PasswordLastSet`        | `DateTime`           | Date and time when the account's password was last set
-| `PasswordRequired`      | `PasswordRequired`       | `Boolean`            | Whether the account requires a password
-| `ProfilePath`           | (N/A)                    | `String`             | Path of account's user profile
-| `ScriptPath`            | (N/A)                    | `String`             | Path of account's logon script
-| `SID`                   | `SID`                    | `SecurityIdentifier` | Account's security identifier (SID)
-| `UserAccountControl`    | (N/A)                    | `UInt32`             | Value containing flags set on the account
-| `UserMayChangePassword` | `UserMayChangePassword`  | `Boolean`            | Whether the account can change its own password
+| `NetLocalUserPrincipal` | `LocalUser`              | Type      | Description
+| ----------------------- | -----------              | ----      | -----------
+| `ChangePasswordAtLogon` | (N/A)                    | `Boolean` | Whether the account's password must change at next logon
+| `ComputerName`          | (N/A)                    | `String`  | Computer where account name was resolved
+| `HomeDirectory`         | (N/A)                    | `String`  | Path of account's home directory
+| `HomeDrive`             | (N/A)                    | `String`  | Drive letter of account's home drive
+| `PasswordChangeable`    | `PasswordChangeableDate` | `DateTime`| Date and time when the account's password can be changed
+| `ProfilePath`           | (N/A)                    | `String`  | Path of account's user profile
+| `ScriptPath`            | (N/A)                    | `String`  | Path of account's logon script
+| `UserAccountControl`    | (N/A)                    | `UInt32`  | Value containing flags set on the account
 
-Please note the following differences between the **NetAccounts** module and the Microsoft **LocalAccounts** module:
+Please note the following differences in local user account objects between the **NetAccounts** module and the Microsoft **LocalAccounts** module:
 
 * The `LocalUser` object from the **LocalAccounts** module lacks the `ComputerName` property because the `LocalAccounts` module does not support managing local user accounts on a remote computer.
 
@@ -193,3 +191,37 @@ Please note the following differences between the **NetAccounts** module and the
 * The `PasswordChangeable` property in the **NetAccounts** module is named `PasswordChangeableDate` in the **LocalAccounts** module.
 
 * The **NetAccounts** module allows you set the `PasswordRequired` property of a local user account without changing the account's password.
+
+## Managing Account Policies
+
+The **NetAccounts** module allows management of account (password, account lockout, and forced logoff) policies on local and remote computers.
+
+**Get-NetLocalAccountPolicy** outputs `NetLocalAccountPolicy` objects, as described in the following table:
+
+| Property                    | Type      | Description
+| --------                    | ----      | -----------
+| `ComputerName`              | `String`  | Computer where policies are configured
+| `PasswordsExpire`           | `Boolean` | Specifies whether passwords expire
+| `MaximumPasswordAgeDays`    | `UInt32`  | Maximum password age if `PasswordsExpire` is `$true`
+| `MinimumPasswordLength`     | `UInt32`  | Minimum password length
+| `MinimumPasswordAgeDays`    | `UInt32`  | Minimum password age
+| `PasswordHistoryCount`      | `UInt32`  | Number of passwords retained in password history
+| `LockoutThresholdCount`     | `UInt32`  | Number of bad password attempts that trigger account lockout
+| `LockoutDurationMinutes`    | `UInt32`  | How long account lockouts should last
+| `LockoutObservationMinutes` | `UInt32`  | How long between any two failed logon attempts before lockout occurs
+| `ForceLogoff`               | `Boolean` | Specifies whether user accounts are forced to log off
+| `ForceLogoffMinutes`        | `UInt32`  | How long after the end of logon hours users are logged off if `ForceLogoff` is `$true`
+
+**Set-NetLocalAccountPolicy** configures these policy items.
+
+**Get-NetLocalAccountPolicy** and **Set-NetLocalAccountPolicy** are roughly analogous to the legacy `net accounts` command, with the following improvements:
+
+* `Get-NetLocalAccountPolicy` outputs objects with typed properties; `net accounts` output is text-only and must parsed.
+
+* `Get-NetLocalAccountPolicy` includes account lockout policies in its output; `net accounts` does not.
+
+* `Get-NetLocalAccountPolicy` can retrieve password, account lockout, and forced logoff policies from a remote computer; `net accounts` cannot.
+
+* `Set-NetLocalAccountPolicy` can set account lockout properties; `net accounts` cannot.
+
+* `Set-NetLocalAccountPolicy` can set password, account lockout, and forced logoff policies on a remote computer; `net accounts` cannot.

@@ -1,11 +1,11 @@
 @{
   RootModule = 'NetAccounts.psm1'
-  ModuleVersion = '0.0.2'
+  ModuleVersion = '0.0.3'
   GUID = '31df095b-3e4b-485c-ad3a-b12e746e0bf6'
   Author = 'Bill Stewart'
   CompanyName = 'Bill Stewart'
   Copyright = '(C) 2025 by Bill Stewart'
-  Description = 'Manages local security groups and local user accounts on local and remote Windows computers.'
+  Description = 'Manages local security groups, local user accounts, and account policies on local and remote Windows computers.'
   CompatiblePSEditions = @('Desktop','Core')
   PowerShellVersion = '5.1'
   AliasesToExport = '*'
@@ -14,6 +14,7 @@
     'Add-NetLocalGroupMember'
     'Disable-NetLocalUser'
     'Enable-NetLocalUser'
+    'Get-NetLocalAccountPolicy'
     'Get-NetLocalAdminGroup'
     'Get-NetLocalAdminUser'
     'Get-NetLocalGroup'
@@ -27,6 +28,7 @@
     'Remove-NetLocalUser'
     'Rename-NetLocalGroup'
     'Rename-NetLocalUser'
+    'Set-NetLocalAccountPolicy'
     'Set-NetLocalGroup'
     'Set-NetLocalUser'
   )

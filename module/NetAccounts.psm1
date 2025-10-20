@@ -53,8 +53,10 @@ The Windows API functions that modify users and local security groups all use
 prefix seemed appropriate. The "Net" prefix also suggests they work "over the
 network" (remotely), which differentiates this module from Microsoft's module.
 
-This module also includes three additional commands that Microsoft's module
+This module also includes some additional commands that Microsoft's module
 does not provide:
+
+* Get-NetLocalAccountPolicy and Set-NetLocalAccountPolicy - Self-explanatory.
 
 * Get-NetLocalAdminGroup - Gets the local Administrators security group (SID
   S-1-5-32-544). Equivalent to:
@@ -239,6 +241,61 @@ public enum NetPrincipalType
   LocalUser,
   DomainUser,
   WellKnown      // SID_NAME_USE == SidTypeWellKnownGroup
+}
+
+// [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts+NetLocalAccountPolicy]
+public class NetLocalAccountPolicy
+{
+  public string ComputerName;
+  public Boolean ForceLogoff;
+  public uint? ForceLogoffMinutes;
+  public Boolean PasswordsExpire;
+  public uint? MaximumPasswordAgeDays;
+  public uint MinimumPasswordAgeDays;
+  public uint MinimumPasswordLength;
+  public uint PasswordHistoryCount;
+  public uint? LockoutDurationMinutes;
+  public uint? LockoutObservationMinutes;
+  public uint LockoutThresholdCount;
+
+  public NetLocalAccountPolicy(string ComputerName,
+    uint ForceLogoffSeconds,
+    uint MaximumPasswordAgeSeconds,
+    uint MinimumPasswordAgeSeconds,
+    uint MinimumPasswordLength,
+    uint PasswordHistoryCount,
+    uint LockoutDurationSeconds,
+    uint LockoutObservationSeconds,
+    uint LockoutThresholdCount)
+  {
+    this.ComputerName = ComputerName.Length > 0 ?
+      ComputerName :
+      System.Environment.MachineName;
+    this.ForceLogoff = ForceLogoffSeconds == TIMEQ_FOREVER ?
+      false :
+      true;
+    this.ForceLogoffMinutes = ForceLogoffSeconds == TIMEQ_FOREVER ?
+      (uint?)null :
+      ForceLogoffSeconds / 60;
+    this.PasswordsExpire = MaximumPasswordAgeSeconds == TIMEQ_FOREVER ?
+      false :
+      true;
+    this.MaximumPasswordAgeDays = MaximumPasswordAgeSeconds == TIMEQ_FOREVER ?
+      (uint?)null :
+      MaximumPasswordAgeSeconds / 86400;
+    this.MinimumPasswordAgeDays = MinimumPasswordAgeSeconds == 0 ?
+      0 :
+      MinimumPasswordAgeSeconds / 86400;
+    this.MinimumPasswordLength = MinimumPasswordLength;
+    this.PasswordHistoryCount = PasswordHistoryCount;
+    this.LockoutDurationMinutes = LockoutThresholdCount > 0 ?
+      (LockoutDurationSeconds > 0 ? LockoutDurationSeconds / 60 : 0) :
+      (uint?)null;
+    this.LockoutObservationMinutes = LockoutThresholdCount > 0 ?
+      (LockoutObservationSeconds > 0 ? LockoutObservationSeconds / 60 : 0) :
+      (uint?)null;
+    this.LockoutThresholdCount = LockoutThresholdCount;
+  }
 }
 
 // [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts+NetPrincipal]
@@ -690,6 +747,45 @@ public struct USER_MODALS_INFO_2 {
   public IntPtr usrmod2_domain_id;
 }
 
+// [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts+USER_MODALS_INFO_3]
+// Used by NetUserModalsGet to get account lockout information
+[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+public struct USER_MODALS_INFO_3 {
+  public uint usrmod3_lockout_duration;
+  public uint usrmod3_lockout_observation_window;
+  public uint usrmod3_lockout_threshold;
+}
+
+// [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts+USER_MODALS_INFO_1001]
+// Used by NetUserModalsSet to set minimum password length
+public struct USER_MODALS_INFO_1001 {
+  public uint usrmod1001_min_passwd_len;
+}
+
+// [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts+USER_MODALS_INFO_1002]
+// Used by NetUserModalsSet to set maximum password age
+public struct USER_MODALS_INFO_1002 {
+  public uint usrmod1002_max_passwd_age;
+}
+
+// [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts+USER_MODALS_INFO_1003]
+// Used by NetUserModalsSet to set minimum password age
+public struct USER_MODALS_INFO_1003 {
+  public uint usrmod1003_min_passwd_age;
+}
+
+// [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts+USER_MODALS_INFO_1004]
+// Used by NetUserModalsSet to set forced logoff
+public struct USER_MODALS_INFO_1004 {
+  public uint usrmod1004_force_logoff;
+}
+
+// [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts+USER_MODALS_INFO_1005]
+// Used by NetUserModalsSet to set password history length
+public struct USER_MODALS_INFO_1005 {
+  public uint usrmod1005_password_hist_len;
+}
+
 // [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts]::NetApiBufferFree()
 [DllImport("netapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
 public static extern uint NetApiBufferFree(IntPtr Buffer);
@@ -838,6 +934,15 @@ public static extern uint NetUserModalsGet(
   out IntPtr bufptr
 );
 
+// [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts]::NetUserModalsSet()
+[DllImport("netapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+public static extern uint NetUserModalsSet(
+  string servername,
+  uint level,
+  IntPtr buf,
+  out uint parm_err
+);
+
 // [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts]::NetUserSetInfo()
 [DllImport("netapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
 public static extern uint NetUserSetInfo(
@@ -853,6 +958,7 @@ public static extern uint NetUserSetInfo(
 # Add type accelerators for objects
 # =============================================================================
 $TypeAccelerators = [PSObject].Assembly.GetType("System.Management.Automation.TypeAccelerators")
+$TypeAccelerators::Add("NetLocalAccountPolicy","F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts+NetLocalAccountPolicy")
 $TypeAccelerators::Add("NetPrincipalType","F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts+NetPrincipalType")
 $TypeAccelerators::Add("NetPrincipal","F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts+NetPrincipal")
 $TypeAccelerators::Add("NetLocalGroupPrincipal","F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts+NetLocalGroupPrincipal")
@@ -1209,7 +1315,10 @@ function ResolvePrincipal {
 
 # API(s): NetServerGetInfo
 # Input: Computer name
-# Output: $true if computer is a DC, or $false otherwise
+# Output is UInt32:
+# * ERROR_SUCCESS (0) if machine reachable and is not a DC
+# * ERROR_NOT_SUPPORTED (0x32) if machine reachable and is a DC
+# * Otherwise, error returned from NetServerGetInfo
 # Writes error to error stream if NetServerGetInfo fails or if computer is DC;
 # specify -terminatingError switch to throw statement-terminating error
 function TestDC {
@@ -1223,24 +1332,18 @@ function TestDC {
     $terminatingError
   )
   $bufPtr = [IntPtr]::Zero
-  $result = $false
   try {
-    $apiResult = [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts]::NetServerGetInfo(
+    $result = [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts]::NetServerGetInfo(
       $computerName,  # servername
       101,            # level
       [Ref] $bufPtr   # bufptr
     )
-    if ( $apiResult -eq $ERROR_SUCCESS ) {
-      $outStruct = [Runtime.InteropServices.Marshal]::PtrToStructure($bufPtr,
+    if ( $result -eq $ERROR_SUCCESS ) {
+      $si = [Runtime.InteropServices.Marshal]::PtrToStructure($bufPtr,
         [Type] [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts+SERVER_INFO_101])
-      $result = (($outStruct.sv101_type -band $SV_TYPE_DOMAIN_CTRL) -ne 0) -or
-        (($outStruct.sv101_type -band $SV_TYPE_DOMAIN_BAKCTRL) -ne 0)
-      if ( $result ) {
-        WriteCustomError $ERROR_NOT_SUPPORTED $computerName -scope 2 -terminatingError:$terminatingError
+      if ( (($si.sv101_type -band $SV_TYPE_DOMAIN_CTRL) -ne 0) -or (($si.sv101_type -band $SV_TYPE_DOMAIN_BAKCTRL) -ne 0) ) {
+        $result = $ERROR_NOT_SUPPORTED
       }
-    }
-    else {
-      WriteCustomError $apiResult $computerName -scope 2 -terminatingError:$terminatingError
     }
   }
   finally {
@@ -1248,7 +1351,10 @@ function TestDC {
       [Void] [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts]::NetApiBufferFree($bufPtr)
     }
   }
-  $result
+  if ( $result -ne $ERROR_SUCCESS ) {
+    WriteCustomError $result $computerName -scope 2 -terminatingError:$terminatingError
+  }
+  return $result
 }
 
 # API(s): DsGetDcName
@@ -1665,37 +1771,95 @@ function NetLocalGroupSetInfo {
 }
 
 # API(s): NetUserModalsGet
-# Module function(s): Get-NetLocalUser
+# Module function(s): Get-NetLocalAccountPolicy
 # Input: Computer name and error scope
-# Output: F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts+USER_MODALS_INFO_0
-function NetUserModalsGetPWInfo {
-  [CmdletBinding()]
+# Output: If -level specified, output is API struct; otherwise, output is
+# NetLocalAccountPolicy object
+# (Note: Don't extend this function to return information level 2 because the
+# SID pointer won't be valid after the function returns)
+function NetUserModalsGet {
+  [CmdletBinding(DefaultParameterSetName = "AccountInfoOutput")]
   param(
-    [Parameter(Position = 0,Mandatory)]
+    [Parameter(ParameterSetName = "AccountInfoOutput",Position = 0,Mandatory)]
+    [Parameter(ParameterSetName = "ApiOutput",Position = 0,Mandatory)]
     [String]
     $computerName,
 
+    [Parameter(ParameterSetName = "ApiOutput",Mandatory)]
+    [ValidateSet(0,3)]
+    [Int]
+    $level,
+
+    [Parameter(ParameterSetName = "AccountInfoOutput")]
+    [Parameter(ParameterSetName = "ApiOutput")]
     [Int]
     $errorScope = 0
   )
-  $bufPtr = [IntPtr]::Zero
-  try {
-    $result = [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts]::NetUserModalsGet(
-      $computerName,  # servername
-      0,              # level
-      [Ref] $bufPtr   # bufptr
-    )
-    if ( $result -eq $ERROR_SUCCESS ) {
-      [Runtime.InteropServices.Marshal]::PtrToStructure($bufPtr,
-        [Type] [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts+USER_MODALS_INFO_0])
+  if ( $PSCmdlet.ParameterSetName -eq "ApiOutput" ) {
+    $bufPtr = [IntPtr]::Zero
+    $structType = "F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts+USER_MODALS_INFO_{0}" -f $level
+    try {
+      $result = [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts]::NetUserModalsGet(
+        $computerName,  # servername
+        $level,         # level
+        [Ref] $bufPtr   # bufptr
+      )
+      if ( $result -eq $ERROR_SUCCESS ) {
+        [Runtime.InteropServices.Marshal]::PtrToStructure($bufPtr,[Type] $structType)
+      }
+      else {
+        WriteCustomError $result $computerName -scope $errorScope
+      }
     }
-    else {
-      WriteCustomError $result $computerName -scope $errorScope -terminatingError
+    finally {
+      if ( $bufPtr -ne [IntPtr]::Zero ) {
+        [Void] [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts]::NetApiBufferFree($bufPtr)
+      }
     }
   }
-  finally {
-    if ( $bufPtr -ne [IntPtr]::Zero ) {
-      [Void] [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts]::NetApiBufferFree($bufPtr)
+  else {
+    $bufPtr0 = $bufPtr3 = [IntPtr]::Zero
+    try {
+      $result = [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts]::NetUserModalsGet(
+        $computerName,  # servername
+        0,              # level
+        [Ref] $bufPtr0  # bufptr
+      )
+      if ( $result -eq $ERROR_SUCCESS ) {
+        $result = [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts]::NetUserModalsGet(
+          $computerName,  # servername
+          3,              # level
+          [Ref] $bufPtr3  # bufptr
+        )
+      }
+      if ( $result -eq $ERROR_SUCCESS ) {
+        $outStruct0 = [Runtime.InteropServices.Marshal]::PtrToStructure($bufPtr0,
+          [Type] [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts+USER_MODALS_INFO_0])
+        $outStruct3 = [Runtime.InteropServices.Marshal]::PtrToStructure($bufPtr3,
+          [Type] [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts+USER_MODALS_INFO_3])
+        New-Object NetLocalAccountPolicy(
+          $computerName,                                   # computerName
+          $outStruct0.usrmod0_force_logoff,                # ForceLogoffSeconds
+          $outStruct0.usrmod0_max_passwd_age,              # MaximumPasswordAgeSeconds
+          $outStruct0.usrmod0_min_passwd_age,              # MinimumPasswordAgeSeconds
+          $outStruct0.usrmod0_min_passwd_len,              # MinimumPasswordLength
+          $outStruct0.usrmod0_password_hist_len,           # PasswordHistoryCount
+          $outStruct3.usrmod3_lockout_duration,            # LockoutDurationSeconds
+          $outStruct3.usrmod3_lockout_observation_window,  # LockoutObservationSeconds
+          $outStruct3.usrmod3_lockout_threshold            # LockoutThresholdCount
+        )
+      }
+      else {
+        WriteCustomError $result $computerName -scope $errorScope
+      }
+    }
+    finally {
+      if ( $bufPtr0 -ne [IntPtr]::Zero ) {
+        [Void] [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts]::NetApiBufferFree($bufPtr0)
+      }
+      if ( $bufPtr3 -ne [IntPtr]::Zero ) {
+        [Void] [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts]::NetApiBufferFree($bufPtr3)
+      }
     }
   }
 }
@@ -1703,8 +1867,8 @@ function NetUserModalsGetPWInfo {
 # API(s): NetUserModalsGet
 # Input: Computer name
 # Output: Security.Principal.SecurityIdentifier of account authority SID for
-# the specified computer name (if computer name is domain controller (DC), this
-# is the account authority SID of the DC's domain)
+# the specified computer name (if computer is a domain controller, this is the
+# account authority SID of the DC's domain)
 function GetAuthoritySID {
   [CmdletBinding()]
   param(
@@ -1715,6 +1879,8 @@ function GetAuthoritySID {
     [Int]
     $errorScope = 0
   )
+  # Call NetUserModalsGet API directly in order to access SID pointer while
+  # still valid (before freeing buffer)
   $bufPtr = [IntPtr]::Zero
   try {
     $result = [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts]::NetUserModalsGet(
@@ -1728,7 +1894,7 @@ function GetAuthoritySID {
       New-Object Security.Principal.SecurityIdentifier($um.usrmod2_domain_id)
     }
     else {
-      WriteCustomError $result $name -scope $errorScope -terminatingError
+      WriteCustomError $result $computerName -scope $errorScope
     }
   }
   finally {
@@ -2051,6 +2217,7 @@ function NetUserAdd {
 # API: NetUserDel
 # Module function(s): Remove-NetLocalUser
 # Input: Computer name and user name
+# Output: Zero for success, non-zero for failure
 function NetUserDel {
   [CmdletBinding()]
   param(
@@ -2077,6 +2244,207 @@ function NetUserDel {
   }
 }
 
+# API: NetUserModalsSet
+# Module function(s): Set-NetLocalAccountPolicy
+# Input: Computer name and other properties
+# Output: Zero for success, non-zero for failure
+function NetUserModalsSet {
+  [CmdletBinding()]
+  param(
+    [Parameter(Position = 0,Mandatory)]
+    [String]
+    $computerName,
+
+    [Parameter(ParameterSetName = "AccountLockout",Mandatory)]
+    [UInt32]
+    $lockoutDurationSeconds,
+
+    [Parameter(ParameterSetName = "AccountLockout",Mandatory)]
+    [Int]
+    $lockoutObservationSeconds,
+
+    [Parameter(ParameterSetName = "AccountLockout",Mandatory)]
+    [UInt32]
+    $lockoutThresholdCount,
+
+    [Parameter(ParameterSetName = "MinimumPasswordLength",Mandatory)]
+    [UInt32]
+    $minimumPasswordLength,
+
+    [Parameter(ParameterSetName = "MaximumPasswordAge",Mandatory)]
+    [UInt32]
+    $maximumPasswordAgeSeconds,
+
+    [Parameter(ParameterSetName = "MinimumPasswordAge",Mandatory)]
+    [UInt32]
+    $minimumPasswordAgeSeconds,
+
+    [Parameter(ParameterSetName = "ForceLogoff",Mandatory)]
+    [UInt32]
+    $forceLogoffSeconds,
+
+    [Parameter(ParameterSetName = "PasswordHistoryCount",Mandatory)]
+    [UInt32]
+    $passwordHistoryCount
+  )
+  switch ($PSCmdlet.ParameterSetName ) {
+    "AccountLockout" {
+      $level = 3
+      $um = New-Object F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts+USER_MODALS_INFO_3
+      $um.usrmod3_lockout_duration = $lockoutDurationSeconds
+      $um.usrmod3_lockout_observation_window = $lockoutObservationSeconds
+      $um.usrmod3_lockout_threshold = $lockoutThresholdCount
+    }
+    "MinimumPasswordLength" {
+      $level = 1001
+      $um = New-Object F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts+USER_MODALS_INFO_1001
+      $um.usrmod1001_min_passwd_len = $minimumPasswordLength
+    }
+    "MaximumPasswordAge" {
+      $level = 1002
+      $um = New-Object F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts+USER_MODALS_INFO_1002
+      $um.usrmod1002_max_passwd_age = $maximumPasswordAgeSeconds
+    }
+    "MinimumPasswordAge" {
+      $level = 1003
+      $um = New-Object F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts+USER_MODALS_INFO_1003
+      $um.usrmod1003_min_passwd_age = $minimumPasswordAgeSeconds
+    }
+    "ForceLogoff" {
+      $level = 1004
+      $um = New-Object F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts+USER_MODALS_INFO_1004
+      $um.usrmod1004_force_logoff = $forceLogoffSeconds
+    }
+    "PasswordHistoryCount" {
+      $level = 1005
+      $um = New-Object F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts+USER_MODALS_INFO_1005
+      $um.usrmod1005_password_hist_len = $passwordHistoryCount
+    }
+  }
+  $parmErr = 0
+  try {
+    $bufPtr = [Runtime.InteropServices.Marshal]::AllocHGlobal([Runtime.InteropServices.Marshal]::SizeOf($um))
+    [Runtime.InteropServices.Marshal]::StructureToPtr($um,$bufPtr,$false)
+    if ( -not $TEST_MODE ) {
+      $result = [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts]::NetUserModalsSet(
+        $computerName,  # servername
+        $level,         # level
+        $bufPtr,        # buf
+        [Ref] $parmErr  # parm_err
+      )
+    }
+    else {
+      $result = $ERROR_SUCCESS
+      $testMessage = 'TEST: NetUserModalsSet {0}{1}' -f $computerName,[Environment]::NewLine
+      switch ( $PSCmdlet.ParameterSetName ) {
+        "AccountLockout" {
+          $testMessage += '      USER_MODALS_INFO_3.usrmod3_lockout_duration = {0}{1}' -f $um.usrmod3_lockout_duration,[Environment]::NewLine
+          $testMessage += '      USER_MODALS_INFO_3.usrmod3_lockout_observation_window = {0}{1}' -f $um.usrmod3_lockout_observation_window,[Environment]::NewLine
+          $testMessage += '      USER_MODALS_INFO_3.usrmod3_lockout_threshold = {0}' -f $um.usrmod3_lockout_threshold
+        }
+        "MinimumPasswordLength" {
+          $testMessage += '      USER_MODALS_INFO_1001.usrmod1001_min_passwd_len = {0}' -f $um.usrmod1001_min_passwd_len
+        }
+        "MaximumPasswordAge" {
+          $testMessage += '      USER_MODALS_INFO_1002.usrmod1002_max_passwd_age = {0}' -f $um.usrmod1002_max_passwd_age
+        }
+        "MinimumPasswordAge" {
+          $testMessage += '      USER_MODALS_INFO_1003.usrmod1003_min_passwd_age = {0}' -f $um.usrmod1003_min_passwd_age
+        }
+        "ForceLogoff" {
+          $testMessage += '      USER_MODALS_INFO_1004.usrmod1004_force_logoff = {0}' -f $um.usrmod1004_force_logoff
+        }
+        "PasswordHistoryCount" {
+          $testMessage += '      USER_MODALS_INFO_1005.usrmod1005_password_hist_len = {0}' -f $um.usrmod1005_password_hist_len
+        }
+      }
+      Write-Host $testMessage -ForegroundColor $TEST_COLOR
+    }
+    if ( $result -ne $ERROR_SUCCESS ) {
+      WriteCustomError $result $computerName -scope 3
+    }
+  }
+  finally {
+    [Runtime.InteropServices.Marshal]::FreeHGlobal($bufPtr)
+  }
+  # SetNetLocalAccountPolicy terminates on first error; other callers can discard this
+  $result
+}
+
+# Wrapper for NetUserModalsSet
+function SetNetLocalAccountPolicy {
+  [CmdletBinding()]
+  param(
+    [Parameter(Position = 0,Mandatory)]
+    [String]
+    $computerName,
+
+    [Parameter(ParameterSetName = "LockoutPolicy")]
+    [UInt32]
+    $lockoutDurationSeconds,
+
+    [Parameter(ParameterSetName = "LockoutPolicy")]
+    [UInt32]
+    $lockoutObservationSeconds,
+
+    [Parameter(ParameterSetName = "LockoutPolicy")]
+    [UInt32]
+    $lockoutThresholdCount,
+
+    [Parameter(ParameterSetName = "OtherPolicies")]
+    [UInt32]
+    $minimumPasswordLength,
+
+    [Parameter(ParameterSetName = "OtherPolicies")]
+    [UInt32]
+    $maximumPasswordAgeSeconds,
+
+    [Parameter(ParameterSetName = "OtherPolicies")]
+    [UInt32]
+    $minimumPasswordAgeSeconds,
+
+    [Parameter(ParameterSetName = "OtherPolicies")]
+    [UInt32]
+    $forceLogoffSeconds,
+
+    [Parameter(ParameterSetName = "OtherPolicies")]
+    [UInt32]
+    $passwordHistoryCount
+  )
+  switch ( $PSCmdlet.ParameterSetName ) {
+    "LockoutPolicy" {
+      # These parameters must all be specified together
+      $params = @{
+        computerName = $computerName
+        lockoutDurationSeconds = $lockoutDurationSeconds
+        lockoutObservationSeconds = $lockoutObservationSeconds
+        lockoutThresholdCount = $lockoutThresholdCount
+      }
+      $null = NetUserModalsSet @params
+    }
+    "OtherPolicies" {
+      $otherPolicyParams = @(
+        "minimumPasswordLength"
+        "maximumPasswordAgeSeconds"
+        "minimumPasswordAgeSeconds"
+        "forceLogoffSeconds"
+        "passwordHistoryCount"
+      )
+      foreach ( $psBoundParameter in $psBoundParameters.GetEnumerator() ) {
+        $params = @{
+          computerName = $computerName
+        }
+        if ( $otherPolicyParams -contains $psBoundParameter.Key ) {
+          $params[$psBoundParameter.Key] = $psBoundParameter.Value
+          if ( (NetUserModalsSet @params) -ne $ERROR_SUCCESS ) {
+            break
+          }
+        }
+      }
+    }
+  }
+}
+
 # API: NetUserSetInfo
 # Module function(s): Set-NetLocalUser
 # Input: Computer name, user name and other properties
@@ -2084,38 +2452,11 @@ function NetUserDel {
 function NetUserSetInfo {
   [CmdletBinding()]
   param(
-    [Parameter(ParameterSetName = "Description",Position = 0,Mandatory)]
-    [Parameter(ParameterSetName = "Enable",Position = 0,Mandatory)]
-    [Parameter(ParameterSetName = "FullName",Position = 0,Mandatory)]
-    [Parameter(ParameterSetName = "Rename",Position = 0,Mandatory)]
-    [Parameter(ParameterSetName = "SetPassword",Position = 0,Mandatory)]
-    [Parameter(ParameterSetName = "ChangePasswordAtLogon",Position = 0,Mandatory)]
-    [Parameter(ParameterSetName = "PasswordNeverExpires",Position = 0,Mandatory)]
-    [Parameter(ParameterSetName = "PasswordRequired",Position = 0,Mandatory)]
-    [Parameter(ParameterSetName = "AccountExpires",Position = 0,Mandatory)]
-    [Parameter(ParameterSetName = "AccountNeverExpires",Position = 0,Mandatory)]
-    [Parameter(ParameterSetName = "UserMayChangePassword",Position = 0,Mandatory)]
-    [Parameter(ParameterSetName = "ProfilePath",Position = 0,Mandatory)]
-    [Parameter(ParameterSetName = "ScriptPath",Position = 0,Mandatory)]
-    [Parameter(ParameterSetName = "HomeDrive",Position = 0,Mandatory)]
-    [Parameter(ParameterSetName = "HomeDirectory",Position = 0,Mandatory)]
+    [Parameter(Position = 0,Mandatory)]
     [String]
     $computerName,
 
-    [Parameter(ParameterSetName = "Description",Position = 1,Mandatory)]
-    [Parameter(ParameterSetName = "Enable",Position = 1,Mandatory)]
-    [Parameter(ParameterSetName = "FullName",Position = 1,Mandatory)]
-    [Parameter(ParameterSetName = "Rename",Position = 1,Mandatory)]
-    [Parameter(ParameterSetName = "SetPassword",Position = 1,Mandatory)]
-    [Parameter(ParameterSetName = "ChangePasswordAtLogon",Position = 1,Mandatory)]
-    [Parameter(ParameterSetName = "PasswordNeverExpires",Position = 1,Mandatory)]
-    [Parameter(ParameterSetName = "PasswordRequired",Position = 1,Mandatory)]
-    [Parameter(ParameterSetName = "AccountExpires",Position = 1,Mandatory)]
-    [Parameter(ParameterSetName = "AccountNeverExpires",Position = 1,Mandatory)]
-    [Parameter(ParameterSetName = "UserMayChangePassword",Position = 1,Mandatory)]
-    [Parameter(ParameterSetName = "ProfilePath",Position = 1,Mandatory)]
-    [Parameter(ParameterSetName = "HomeDrive",Position = 1,Mandatory)]
-    [Parameter(ParameterSetName = "HomeDirectory",Position = 1,Mandatory)]
+    [Parameter(Position = 1,Mandatory)]
     [String]
     $userName,
 
@@ -2345,7 +2686,7 @@ function NetUserSetInfo {
       Write-Host $testMessage -ForegroundColor $TEST_COLOR
     }
     if ( $result -ne $ERROR_SUCCESS ) {
-      WriteCustomError $result (ResolveAccountName "$computerName\$userName") -scope 2
+      WriteCustomError $result (ResolveAccountName "$computerName\$userName") -scope 3
     }
   }
   finally {
@@ -2430,13 +2771,13 @@ function SetNetLocalUser {
     "homeDrive"
     "homeDirectory"
   )
-  foreach ( $PSBoundParameter in $PSBoundParameters.GetEnumerator() ) {
+  foreach ( $psBoundParameter in $PSBoundParameters.GetEnumerator() ) {
     $params = @{
       computerName = $computerName
       userName = $userName
     }
-    if ( $validParams -contains $PSBoundParameter.Key ) {
-      $params[$PSBoundParameter.Key] = $PSBoundParameter.Value
+    if ( $validParams -contains $psBoundParameter.Key ) {
+      $params[$psBoundParameter.Key] = $psBoundParameter.Value
       if ( (NetUserSetInfo @params) -ne $ERROR_SUCCESS ) {
         break
       }
@@ -2447,6 +2788,26 @@ function SetNetLocalUser {
 
 # Exported module functions
 # =============================================================================
+
+# Uses: NetUserModalsGet
+function Get-NetLocalAccountPolicy {
+  [CmdletBinding()]
+  param(
+    [Parameter(Position = 0,ValueFromPipeline,ValueFromPipelineByPropertyName)]
+    [String[]]
+    $ComputerName
+  )
+  begin {
+    if ( -not $ComputerName ) { $ComputerName = [Environment]::MachineName }
+  }
+  process {
+    foreach ( $computerNameItem in $ComputerName ) {
+      if ( (TestDC $computerNameItem) -eq $ERROR_SUCCESS ) {
+        NetUserModalsGet $computerNameItem -errorScope 2
+      }
+    }
+  }
+}
 
 # Uses: NetLocalGroupEnum and NetLocalGroupGetInfo
 function Get-NetLocalGroup {
@@ -2515,7 +2876,7 @@ function Get-NetLocalUser {
   begin {
     if ( -not $ComputerName ) { $ComputerName = [Environment]::MachineName }
     $null = TestDC $ComputerName -terminatingError
-    $pwInfo = NetUserModalsGetPWInfo $ComputerName -errorScope 2
+    $pwInfo = NetUserModalsGet $ComputerName -level 0 -errorScope 2
   }
   process {
     if ( $null -eq $pwInfo ) { return }
@@ -2822,7 +3183,7 @@ function Disable-NetLocalUser {
     foreach ( $inputValue in $inputValues ) {
       switch ( $PSCmdlet.ParameterSetName ) {
         "InputObject" {
-          $principal = ($inputValue,$null)[(TestDC $inputValue.ComputerName)]
+          $principal = ($inputValue,$null)[(TestDC $inputValue.ComputerName) -ne $ERROR_SUCCESS]
         }
         "Name" {
           $principal = Get-NetLocalUser $inputValue -ComputerName $ComputerName
@@ -2876,7 +3237,7 @@ function Enable-NetLocalUser {
     foreach ( $inputValue in $inputValues ) {
       switch ( $PSCmdlet.ParameterSetName ) {
         "InputObject" {
-          $principal = ($inputValue,$null)[(TestDC $inputValue.ComputerName)]
+          $principal = ($inputValue,$null)[(TestDC $inputValue.ComputerName) -ne $ERROR_SUCCESS]
         }
         "Name" {
           $principal = Get-NetLocalUser $inputValue -ComputerName $ComputerName
@@ -2925,7 +3286,7 @@ function Get-NetLocalGroupMember {
     foreach ( $inputValue in $inputValues ) {
       switch ( $PSCmdlet.ParameterSetName ) {
         "Group" {
-          $principal = ($inputValue,$null)[(TestDC $inputValue.ComputerName)]
+          $principal = ($inputValue,$null)[(TestDC $inputValue.ComputerName) -ne $ERROR_SUCCESS]
         }
         "Name" {
           $principal = Get-NetLocalGroup $inputValue -ComputerName $ComputerName
@@ -3126,7 +3487,7 @@ function Remove-NetLocalGroup {
     foreach ( $inputValue in $inputValues ) {
       switch ( $PSCmdlet.ParameterSetName ) {
         "InputObject" {
-          $principal = ($inputValue,$null)[(TestDC $inputValue.ComputerName)]
+          $principal = ($inputValue,$null)[(TestDC $inputValue.ComputerName) -ne $ERROR_SUCCESS]
         }
         "Name" {
           $principal = Get-NetLocalGroup $inputValue -ComputerName $ComputerName
@@ -3179,7 +3540,7 @@ function Remove-NetLocalUser {
     foreach ( $inputValue in $inputValues ) {
       switch ( $PSCmdlet.ParameterSetName ) {
         "InputObject" {
-          $principal = ($inputValue,$null)[(TestDC $inputValue.ComputerName)]
+          $principal = ($inputValue,$null)[(TestDC $inputValue.ComputerName) -ne $ERROR_SUCCESS]
         }
         "Name" {
           $principal = Get-NetLocalUser $inputValue -ComputerName $ComputerName
@@ -3233,7 +3594,7 @@ function Rename-NetLocalGroup {
     }
     switch ( $PSCmdlet.ParameterSetName ) {
       "InputObject" {
-        $principal = ($InputObject,$null)[(TestDC $InputObject.ComputerName)]
+        $principal = ($InputObject,$null)[(TestDC $InputObject.ComputerName) -ne $ERROR_SUCCESS]
       }
       "Name" {
         $principal = Get-NetLocalGroup $Name -ComputerName $ComputerName
@@ -3287,7 +3648,7 @@ function Rename-NetLocalUser {
     }
     switch ( $PSCmdlet.ParameterSetName ) {
       "InputObject" {
-        $principal = ($InputObject,$null)[(TestDC $InputObject.ComputerName)]
+        $principal = ($InputObject,$null)[(TestDC $InputObject.ComputerName) -ne $ERROR_SUCCESS]
       }
       "Name" {
         $principal = Get-NetLocalUser $Name -ComputerName $ComputerName
@@ -3341,7 +3702,7 @@ function Set-NetLocalGroup {
     }
     switch ( $PSCmdlet.ParameterSetName ) {
       "InputObject" {
-        $principal = ($InputObject,$null)[(TestDC $InputObject.ComputerName)]
+        $principal = ($InputObject,$null)[(TestDC $InputObject.ComputerName) -ne $ERROR_SUCCESS]
       }
       "Name" {
         $principal = Get-NetLocalGroup $Name -ComputerName $ComputerName
@@ -3431,7 +3792,7 @@ function Set-NetLocalUser {
     }
     switch ( $PSCmdlet.ParameterSetName ) {
       "InputObject" {
-        $principal = ($InputObject,$null)[(TestDC $InputObject.ComputerName)]
+        $principal = ($InputObject,$null)[(TestDC $InputObject.ComputerName) -ne $ERROR_SUCCESS]
         $params["computerName"] = $InputObject.ComputerName
       }
       "Name" {
@@ -3484,6 +3845,120 @@ function Set-NetLocalUser {
     $target = "{0}\{1}" -f $principal.ComputerName,$principal.Name
     if ( $PSCmdlet.ShouldProcess($target,"Modify local user account") ) {
       SetNetLocalUser @params
+    }
+  }
+}
+
+# Uses: SetNetLocalAccountPolicy
+function Set-NetLocalAccountPolicy {
+  [CmdletBinding(SupportsShouldProcess,ConfirmImpact = "High")]
+  param(
+    [Parameter(Position = 0,ValueFromPipeline,ValueFromPipelineByPropertyName)]
+    [String[]]
+    $ComputerName,
+
+    [Parameter(ParameterSetName = "NoAccountLockout",Mandatory)]
+    [Switch]
+    $NoAccountLockout,
+
+    [Parameter(ParameterSetName = "AccountLockout",Mandatory)]
+    [Int]
+    [ValidateRange(0,99999)]
+    $LockoutDurationMinutes,
+
+    [Parameter(ParameterSetName = "AccountLockout",Mandatory)]
+    [Int]
+    [ValidateRange(1,99999)]
+    $LockoutObservationMinutes,
+
+    [Parameter(ParameterSetName = "AccountLockout",Mandatory)]
+    [Int]
+    [ValidateRange(1,999)]
+    $LockoutThresholdCount,
+
+    [Parameter(ParameterSetName = "MinimumPasswordLength",Mandatory)]
+    [Int]
+    [ValidateRange(0,14)]
+    $MinimumPasswordLength,
+
+    [Parameter(ParameterSetName = "PasswordsNeverExpire",Mandatory)]
+    [Switch]
+    $PasswordsNeverExpire,
+
+    [Parameter(ParameterSetName = "MaximumPasswordAge",Mandatory)]
+    [Int]
+    [ValidateRange(1,999)]
+    $MaximumPasswordAgeDays,
+
+    [Parameter(ParameterSetName = "MinimumPasswordAge",Mandatory)]
+    [Int]
+    [ValidateRange(0,999)]
+    $MinimumPasswordAgeDays,
+
+    [Parameter(ParameterSetName = "PasswordHistoryCount",Mandatory)]
+    [Int]
+    [ValidateRange(0,8)]
+    $PasswordHistoryCount,
+
+    [Parameter(ParameterSetName = "NoForceLogoff",Mandatory)]
+    [Switch]
+    $NoForceLogoff,
+
+    [Parameter(ParameterSetName = "ForceLogoff",Mandatory)]
+    [Int]
+    [ValidateRange(0,999)]
+    $ForceLogoffMinutes
+  )
+  begin {
+    SetTestMode -Confirm:$false -WhatIf:$false
+    if ( -not $ComputerName ) { $ComputerName = [Environment]::MachineName }
+  }
+  process {
+    foreach ( $computerNameItem in $ComputerName ) {
+      $null = TestDC $computerNameItem -terminatingError
+      $params = @{
+        "computerName" = $computerNameItem
+      }
+      switch ( $PSCmdlet.ParameterSetName ) {
+        "NoAccountLockout" {
+          $params["lockoutDurationSeconds"] = 0
+          $params["lockoutObservationSeconds"] = 0
+          $params["lockoutThresholdCount"] = 0
+        }
+        "AccountLockout" {
+          if ( $LockoutDurationMinutes -lt $LockoutObservationMinutes ) {
+            WriteCustomError $ERROR_INVALID_PARAMETER "-LockoutDurationMinutes must be greater than or equal to -LockoutObservationMinutes." -scope 1 -terminatingError
+            return
+          }
+          $params["lockoutDurationSeconds"] = $LockoutDurationMinutes * 60
+          $params["lockoutObservationSeconds"] = $LockoutObservationMinutes * 60
+          $params["lockoutThresholdCount"] = $LockoutThresholdCount
+        }
+        "MinimumPasswordLength" {
+          $params["minimumPasswordLength"] = $MinimumPasswordLength
+        }
+        "PasswordsNeverExpire" {
+          $params["maximumPasswordAgeSeconds"] = $TIMEQ_FOREVER
+        }
+        "MaximumPasswordAge" {
+          $params["maximumPasswordAgeSeconds"] = $MaximumPasswordAgeDays * 86400
+        }
+        "MinimumPasswordAge" {
+          $params["minimumPasswordAgeSeconds"] = $MinimumPasswordAgeDays * 86400
+        }
+        "PasswordHistoryCount" {
+          $params["passwordHistoryCount"] = $PasswordHistoryCount
+        }
+        "NoForceLogoff" {
+          $params["forceLogoffSeconds"] = $TIMEQ_FOREVER
+        }
+        "ForceLogoff" {
+          $params["forceLogoffSeconds"] = $ForceLogoffMinutes * 60
+        }
+      }
+      if ( ($params.Count -gt 1) -and $PSCmdlet.ShouldProcess($computerNameItem,"Modify local account policy") ) {
+        SetNetLocalAccountPolicy @params
+      }
     }
   }
 }

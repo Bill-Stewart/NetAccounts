@@ -2,13 +2,13 @@
 Module Name: NetAccounts
 Module Guid: 31df095b-3e4b-485c-ad3a-b12e746e0bf6
 Download Help Link: {{ Update Download Link }}
-Help Version: 0.0.1
+Help Version: 0.0.3
 Locale: en-US
 ---
 
 # NetAccounts Module
 ## Description
-Manages local security groups and local user accounts on local and remote Windows computers on the Windows platform.
+Manages local security groups, local user accounts, and account policies on local and remote Windows computers on the Windows platform.
 
 ## NetAccounts Cmdlets
 ### [Add-NetLocalGroupMember](Add-NetLocalGroupMember.md)
@@ -19,6 +19,9 @@ Disables local user accounts.
 
 ### [Enable-NetLocalUser](Enable-NetLocalUser.md)
 Enables local user accounts.
+
+### [Get-NetLocalAccountPolicy](Get-NetLocalAccountPolicy.md)
+Gets account and password policy information.
 
 ### [Get-NetLocalAdminGroup](Get-NetLocalAdminGroup.md)
 Gets the local Administrators security group.
@@ -58,6 +61,9 @@ Renames a local security group.
 
 ### [Rename-NetLocalUser](Rename-NetLocalUser.md)
 Renames a local user account.
+
+### [Set-NetLocalAccountPolicy](Set-NetLocalAccountPolicy.md)
+Sets account and password policy information.
 
 ### [Set-NetLocalGroup](Set-NetLocalGroup.md)
 Changes local security groups.

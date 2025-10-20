@@ -2,6 +2,53 @@
 <Configuration>
   <ViewDefinitions>
     <View>
+      <Name>NetLocalAccountPolicyList</Name>
+      <ViewSelectedBy>
+        <TypeName>F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts+NetLocalAccountPolicy</TypeName>
+      </ViewSelectedBy>
+      <ListControl>
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <PropertyName>ComputerName</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>PasswordsExpire</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>MaximumPasswordAgeDays</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>MinimumPasswordLength</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>MinimumPasswordAgeDays</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>PasswordHistoryCount</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>LockoutThresholdCount</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>LockoutDurationMinutes</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>LockoutObservationMinutes</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>ForceLogoff</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>ForceLogoffMinutes</PropertyName>
+              </ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+      </ListControl>
+    </View>
+    <View>
       <Name>NetPrincipalTable</Name>
       <ViewSelectedBy>
         <TypeName>F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts+NetPrincipal</TypeName>
