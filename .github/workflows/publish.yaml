@@ -11,4 +11,5 @@ jobs:
         env:
           APIKEY: ${{ secrets.APIKEY }}
         run: ./publish.ps1
+        working-directory: ./module
         shell: pwsh
