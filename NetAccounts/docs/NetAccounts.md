@@ -2,7 +2,7 @@
 Module Name: NetAccounts
 Module Guid: 31df095b-3e4b-485c-ad3a-b12e746e0bf6
 Download Help Link: {{ Update Download Link }}
-Help Version: 0.0.3
+Help Version: 0.0.4
 Locale: en-US
 ---
 

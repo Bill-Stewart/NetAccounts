@@ -119,6 +119,9 @@ if ( [Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT ) {
   throw "Windows platform required"
 }
 
+# Imports <lang>\Messages.psd1 as $Messages hashtable
+Import-LocalizedData Messages -FileName Messages
+
 # Write-Host color when test mode is enabled
 $TEST_COLOR = [ConsoleColor]::Yellow
 
@@ -2686,7 +2689,7 @@ function NetUserSetInfo {
       Write-Host $testMessage -ForegroundColor $TEST_COLOR
     }
     if ( $result -ne $ERROR_SUCCESS ) {
-      WriteCustomError $result (ResolveAccountName "$computerName\$userName") -scope 3
+      WriteCustomError $result (ResolveAccountName "$computerName\$userName") -scope 2
     }
   }
   finally {
@@ -3066,8 +3069,8 @@ function Add-NetLocalGroupMember {
     foreach ( $memberItem in $Member ) {
       $memberPrincipal = ResolvePrincipal $memberItem $groupPrincipal.ComputerName
       if ( $null -eq $memberPrincipal ) { continue }
-      $action = "{0} member '{1}'" -f $Params["action"],
-        (ResolveAccountName ("{0}\{1}" -f $memberPrincipal.AuthorityName,$memberPrincipal.Name))
+      $messageName = "{0}LocalGroupMember" -f $params["action"]
+      $action = $Messages[$messageName] -f (ResolveAccountName ("{0}\{1}" -f $memberPrincipal.AuthorityName,$memberPrincipal.Name))
       if ( $PSCmdlet.ShouldProcess($target,$action) ) {
         $params["sid"] = $memberPrincipal.SID
         try {
@@ -3133,8 +3136,8 @@ function Remove-NetLocalGroupMember {
     foreach ( $memberItem in $Member ) {
       $memberPrincipal = ResolvePrincipal $memberItem $groupPrincipal.ComputerName
       if ( $null -eq $memberPrincipal ) { continue }
-      $action = "{0} member '{1}'" -f $Params["action"],
-        (ResolveAccountName ("{0}\{1}" -f $memberPrincipal.AuthorityName,$memberPrincipal.Name))
+      $messageName = "{0}LocalGroupMember" -f $params["action"]
+      $action = $Messages[$messageName] -f (ResolveAccountName ("{0}\{1}" -f $memberPrincipal.AuthorityName,$memberPrincipal.Name))
       if ( $PSCmdlet.ShouldProcess($target,$action) ) {
         $params["sid"] = $memberPrincipal.SID
         try {
@@ -3170,7 +3173,7 @@ function Disable-NetLocalUser {
     $ComputerName
   )
   begin {
-    $action = "Disable local user account"
+    $action = $Messages.DisableLocalUser
     $enable = $false
     SetTestMode -Confirm:$false -WhatIf:$false
   }
@@ -3224,7 +3227,7 @@ function Enable-NetLocalUser {
     $ComputerName
   )
   begin {
-    $action = "Enable local user account"
+    $action = $Messages.EnableLocalUser
     $enable = $true
     SetTestMode -Confirm:$false -WhatIf:$false
   }
@@ -3322,7 +3325,7 @@ function New-NetLocalGroup {
     SetTestMode -Confirm:$false -WhatIf:$false
   }
   process {
-    $action = "Create local security group '{0}'" -f $Name
+    $action = $Messages.NewLocalGroup -f $Name
     if ( $PSCmdlet.ShouldProcess($ComputerName,$action) ) {
       if ( (NetLocalGroupAdd $ComputerName $Name $Description) -eq $ERROR_SUCCESS ) {
         if ( -not $TEST_MODE ) {
@@ -3442,7 +3445,7 @@ function New-NetLocalUser {
     # -PasswordRequired default is $true
     $params["passwordRequired"] = ($true,$PasswordRequired)[$PSBoundParameters.ContainsKey("PasswordRequired")]
     $params["computerName"] = $ComputerName
-    $action = "Create local user account '{0}'" -f $params["userName"]
+    $action = $Messages.NewLocalUser -f $params["userName"]
     if ( $PSCmdlet.ShouldProcess($params["computerName"],$action) ) {
       if ( (NetUserAdd @params) -eq $ERROR_SUCCESS ) {
         if ( -not $TEST_MODE ) {
@@ -3475,7 +3478,7 @@ function Remove-NetLocalGroup {
     $ComputerName
   )
   begin {
-    $action = "Remove local security group"
+    $action = $Messages.RemoveLocalGroup
     SetTestMode -Confirm:$false -WhatIf:$false
   }
   process {
@@ -3528,7 +3531,7 @@ function Remove-NetLocalUser {
     $ComputerName
   )
   begin {
-    $action = "Remove local user account"
+    $action = $Messages.RemoveLocalUser
     SetTestMode -Confirm:$false -WhatIf:$false
   }
   process {
@@ -3607,7 +3610,7 @@ function Rename-NetLocalGroup {
       return
     }
     $target = "{0}\{1}" -f $principal.ComputerName,$principal.Name
-    if ( $PSCmdlet.ShouldProcess($target,"Rename local security group to '$NewName'") ) {
+    if ( $PSCmdlet.ShouldProcess($target,$Messages.RenameLocalGroup -f $NewName) ) {
       $null = NetLocalGroupSetInfo $principal.ComputerName $principal.Name -newName $NewName
     }
   }
@@ -3661,7 +3664,7 @@ function Rename-NetLocalUser {
       return
     }
     $target = "{0}\{1}" -f $principal.ComputerName,$principal.Name
-    if ( $PSCmdlet.ShouldProcess($target,"Rename local user account to '$NewName'") ) {
+    if ( $PSCmdlet.ShouldProcess($target,$Messages.RenameLocalUser -f $NewName) ) {
       $null = NetUserSetInfo $principal.ComputerName $principal.Name -newName $NewName
     }
   }
@@ -3715,7 +3718,7 @@ function Set-NetLocalGroup {
       return
     }
     $target = "{0}\{1}" -f $principal.ComputerName,$principal.Name
-    if ( $PSCmdlet.ShouldProcess($target,"Modify local security group") ) {
+    if ( $PSCmdlet.ShouldProcess($target,$Messages.SetLocalGroup) ) {
       $null = NetLocalGroupSetInfo $principal.ComputerName $principal.Name -description $Description
     }
   }
@@ -3806,11 +3809,11 @@ function Set-NetLocalUser {
       return
     }
     if ( $PSBoundParameters.ContainsKey("AccountExpires") -and $AccountNeverExpires ) {
-      WriteCustomError $ERROR_INVALID_PARAMETER 'You cannot specify both -AccountExpires and -AccountNeverExpires.' -scope 1 -terminatingError
+      WriteCustomError $ERROR_INVALID_PARAMETER $Messages.SetLocalUserParamErrorAccountExpiration -scope 1 -terminatingError
     }
     if ( $ChangePasswordAtLogon -and ($PasswordNeverExpires -or
       ($PSBoundParameters.ContainsKey("UserMayChangePassword") -and (-not $UserMayChangePassword))) ) {
-      WriteCustomError $ERROR_INVALID_PARAMETER 'You cannot specify "-ChangePasswordAtLogon $true" with either "-PasswordNeverExpires $true" or "-UserMayChangePassword $false."' -scope 1 -terminatingError
+      WriteCustomError $ERROR_INVALID_PARAMETER $Messages.SetLocalUserParamErrorPassword -scope 1 -terminatingError
     }
     $ValidParams = @(
       "AccountExpires"
@@ -3843,7 +3846,7 @@ function Set-NetLocalUser {
     }
     $params["userName"] = $principal.Name
     $target = "{0}\{1}" -f $principal.ComputerName,$principal.Name
-    if ( $PSCmdlet.ShouldProcess($target,"Modify local user account") ) {
+    if ( $PSCmdlet.ShouldProcess($target,$Messages.SetLocalUser) ) {
       SetNetLocalUser @params
     }
   }
@@ -3927,7 +3930,7 @@ function Set-NetLocalAccountPolicy {
         }
         "AccountLockout" {
           if ( $LockoutDurationMinutes -lt $LockoutObservationMinutes ) {
-            WriteCustomError $ERROR_INVALID_PARAMETER "-LockoutDurationMinutes must be greater than or equal to -LockoutObservationMinutes." -scope 1 -terminatingError
+            WriteCustomError $ERROR_INVALID_PARAMETER $Messages.SetLocalAccountPolicyParamErrorLockout -scope 1 -terminatingError
             return
           }
           $params["lockoutDurationSeconds"] = $LockoutDurationMinutes * 60
@@ -3956,7 +3959,7 @@ function Set-NetLocalAccountPolicy {
           $params["forceLogoffSeconds"] = $ForceLogoffMinutes * 60
         }
       }
-      if ( ($params.Count -gt 1) -and $PSCmdlet.ShouldProcess($computerNameItem,"Modify local account policy") ) {
+      if ( ($params.Count -gt 1) -and $PSCmdlet.ShouldProcess($computerNameItem,$Messages.SetLocalAccountPolicy) ) {
         SetNetLocalAccountPolicy @params
       }
     }
