@@ -7,7 +7,7 @@ schema: 2.0.0
 # Get-NetLocalAccountPolicy
 
 ## SYNOPSIS
-Gets account and password policy information.
+Gets local account and password policy information.
 
 ## SYNTAX
 
@@ -16,7 +16,7 @@ Get-NetLocalAccountPolicy [[-ComputerName] <String[]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Gets account and password policy information from one or more computers.
+Gets local account and password policy information from one or more computers.
 
 ## EXAMPLES
 
@@ -25,14 +25,14 @@ Gets account and password policy information from one or more computers.
 PS > Get-NetLocalAccountPolicy
 ```
 
-Gets account and password policy information from the current computer.
+Gets local account and password policy information from the current computer.
 
 ## PARAMETERS
 
 ### -ComputerName
 Specifies one or more computer names.
 Wildcards are not permitted.
-Omit this parameter to get account and password policy information for the current computer.
+Omit this parameter to get local account and password policy information from the current computer.
 
 ```yaml
 Type: String[]
@@ -60,5 +60,6 @@ You can pipe strings to specify computer names.
 Outputs NetLocalAccountPolicy objects.
 
 ## NOTES
+Get-NetLocalAccountPolicy does not get domain account or password policies.
 
 ## RELATED LINKS

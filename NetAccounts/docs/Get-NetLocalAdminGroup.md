@@ -16,7 +16,7 @@ Get-NetLocalAdminGroup [[-ComputerName] <String[]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Gets the local Administrators security group.
+Gets the local Administrators security group from one or more computers.
 The local Administrators security group has the security identifier (SID) S-1-5-32-544.
 
 ## EXAMPLES
@@ -61,5 +61,6 @@ You can pipe strings to specify computer names.
 Outputs NetLocalGroupPrincipal objects.
 
 ## NOTES
+Get-NetLocalAdminGroup does not get a domain's local Administrators security group.
 
 ## RELATED LINKS

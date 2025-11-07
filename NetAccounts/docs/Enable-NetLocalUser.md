@@ -161,5 +161,6 @@ You can pipe SecurityIdentifier objects to specify the security IDs of local use
 Returns no output.
 
 ## NOTES
+Enable-NetLocalUser does not enable domain user accounts.
 
 ## RELATED LINKS

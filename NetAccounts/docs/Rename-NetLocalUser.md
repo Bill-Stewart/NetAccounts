@@ -171,5 +171,6 @@ You can pipe a SecurityIdentifier object to specify the security ID of the local
 Returns no output.
 
 ## NOTES
+Rename-NetLocalUser does not rename domain user accounts.
 
 ## RELATED LINKS

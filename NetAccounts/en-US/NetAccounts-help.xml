@@ -30,7 +30,7 @@
         <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
           <maml:name>Member</maml:name>
           <maml:description>
-            <maml:para>Specifies one or members to add to the local security group. You can specify members by name, security identifier (SID), or NetPrincipal objects. You can add a local security group as a member of another local security group on the same computer as a nested group, but this does not grant access to members of the nested group. For example, adding a local security group to the local Administrators security group on the same computer does not grant administrator access to the members of the nested group.</maml:para>
+            <maml:para>Specifies one or members to add to the local security group. You can specify members by name, security identifier (SID), or NetPrincipal objects. You cannot add a local security group as a member of another local security group.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">NetPrincipal[]</command:parameterValue>
           <dev:type>
@@ -91,7 +91,7 @@
         <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
           <maml:name>Member</maml:name>
           <maml:description>
-            <maml:para>Specifies one or members to add to the local security group. You can specify members by name, security identifier (SID), or NetPrincipal objects. You can add a local security group as a member of another local security group on the same computer as a nested group, but this does not grant access to members of the nested group. For example, adding a local security group to the local Administrators security group on the same computer does not grant administrator access to the members of the nested group.</maml:para>
+            <maml:para>Specifies one or members to add to the local security group. You can specify members by name, security identifier (SID), or NetPrincipal objects. You cannot add a local security group as a member of another local security group.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">NetPrincipal[]</command:parameterValue>
           <dev:type>
@@ -152,7 +152,7 @@
         <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
           <maml:name>Member</maml:name>
           <maml:description>
-            <maml:para>Specifies one or members to add to the local security group. You can specify members by name, security identifier (SID), or NetPrincipal objects. You can add a local security group as a member of another local security group on the same computer as a nested group, but this does not grant access to members of the nested group. For example, adding a local security group to the local Administrators security group on the same computer does not grant administrator access to the members of the nested group.</maml:para>
+            <maml:para>Specifies one or members to add to the local security group. You can specify members by name, security identifier (SID), or NetPrincipal objects. You cannot add a local security group as a member of another local security group.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">NetPrincipal[]</command:parameterValue>
           <dev:type>
@@ -213,7 +213,7 @@
       <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
         <maml:name>Member</maml:name>
         <maml:description>
-          <maml:para>Specifies one or members to add to the local security group. You can specify members by name, security identifier (SID), or NetPrincipal objects. You can add a local security group as a member of another local security group on the same computer as a nested group, but this does not grant access to members of the nested group. For example, adding a local security group to the local Administrators security group on the same computer does not grant administrator access to the members of the nested group.</maml:para>
+          <maml:para>Specifies one or members to add to the local security group. You can specify members by name, security identifier (SID), or NetPrincipal objects. You cannot add a local security group as a member of another local security group.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">NetPrincipal[]</command:parameterValue>
         <dev:type>
@@ -293,7 +293,8 @@
     </command:returnValues>
     <maml:alertSet>
       <maml:alert>
-        <maml:para></maml:para>
+        <maml:para>Add-NetLocalGroupMember does not add members to domain local security groups.</maml:para>
+        <maml:para>You cannot add a local security group as a member of another local security group.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -575,7 +576,7 @@
     </command:returnValues>
     <maml:alertSet>
       <maml:alert>
-        <maml:para></maml:para>
+        <maml:para>Disable-NetLocalUser does not disable domain user accounts.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -857,7 +858,7 @@
     </command:returnValues>
     <maml:alertSet>
       <maml:alert>
-        <maml:para></maml:para>
+        <maml:para>Enable-NetLocalUser does not enable domain user accounts.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -884,11 +885,11 @@
       <command:verb>Get</command:verb>
       <command:noun>NetLocalAccountPolicy</command:noun>
       <maml:description>
-        <maml:para>Gets account and password policy information.</maml:para>
+        <maml:para>Gets local account and password policy information.</maml:para>
       </maml:description>
     </command:details>
     <maml:description>
-      <maml:para>Gets account and password policy information from one or more computers.</maml:para>
+      <maml:para>Gets local account and password policy information from one or more computers.</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
@@ -896,7 +897,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="0" aliases="none">
           <maml:name>ComputerName</maml:name>
           <maml:description>
-            <maml:para>Specifies one or more computer names. Wildcards are not permitted. Omit this parameter to get account and password policy information for the current computer.</maml:para>
+            <maml:para>Specifies one or more computer names. Wildcards are not permitted. Omit this parameter to get local account and password policy information from the current computer.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
           <dev:type>
@@ -911,7 +912,7 @@
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="0" aliases="none">
         <maml:name>ComputerName</maml:name>
         <maml:description>
-          <maml:para>Specifies one or more computer names. Wildcards are not permitted. Omit this parameter to get account and password policy information for the current computer.</maml:para>
+          <maml:para>Specifies one or more computer names. Wildcards are not permitted. Omit this parameter to get local account and password policy information from the current computer.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
@@ -943,7 +944,7 @@
     </command:returnValues>
     <maml:alertSet>
       <maml:alert>
-        <maml:para></maml:para>
+        <maml:para>Get-NetLocalAccountPolicy does not get domain account or password policies.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -951,7 +952,7 @@
         <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
         <dev:code>PS &gt; Get-NetLocalAccountPolicy</dev:code>
         <dev:remarks>
-          <maml:para>Gets account and password policy information from the current computer.</maml:para>
+          <maml:para>Gets local account and password policy information from the current computer.</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>
@@ -967,7 +968,7 @@
       </maml:description>
     </command:details>
     <maml:description>
-      <maml:para>Gets the local Administrators security group. The local Administrators security group has the security identifier (SID) S-1-5-32-544.</maml:para>
+      <maml:para>Gets the local Administrators security group from one or more computers. The local Administrators security group has the security identifier (SID) S-1-5-32-544.</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
@@ -1022,7 +1023,7 @@
     </command:returnValues>
     <maml:alertSet>
       <maml:alert>
-        <maml:para></maml:para>
+        <maml:para>Get-NetLocalAdminGroup does not get a domain's local Administrators security group.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -1046,7 +1047,7 @@
       </maml:description>
     </command:details>
     <maml:description>
-      <maml:para>Gets the local Administrator user account. The security identifier (SID) of a computer's local Administrator user account is the computer's SID with the relative identifier (RID) 500.</maml:para>
+      <maml:para>Gets the local Administrator user account from one or more computers. The security identifier (SID) of a computer's local Administrator user account is the computer's SID with the relative identifier (RID) 500.</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
@@ -1101,7 +1102,7 @@
     </command:returnValues>
     <maml:alertSet>
       <maml:alert>
-        <maml:para></maml:para>
+        <maml:para>Get-NetLocalAdminUser does not get a domain's Administrator user account.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -1251,7 +1252,7 @@
     </command:returnValues>
     <maml:alertSet>
       <maml:alert>
-        <maml:para></maml:para>
+        <maml:para>Get-NetLocalGroup does not get domain local security groups.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -1444,7 +1445,7 @@
     </command:returnValues>
     <maml:alertSet>
       <maml:alert>
-        <maml:para></maml:para>
+        <maml:para>Get-NetLocalGroupMember does not get members of domain local security groups.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -1594,7 +1595,7 @@
     </command:returnValues>
     <maml:alertSet>
       <maml:alert>
-        <maml:para></maml:para>
+        <maml:para>Get-NetLocalUser does not get domain user accounts.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -1633,7 +1634,7 @@
         <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="0" aliases="none">
           <maml:name>DomainAdmins</maml:name>
           <maml:description>
-            <maml:para>Gets the Domain Admins group principals for the domain name(s) specified by this parameter.</maml:para>
+            <maml:para>Gets Domain Admins group principal(s) for the domain name(s) specified by this parameter.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
           <dev:type>
@@ -1678,7 +1679,7 @@
       <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="0" aliases="none">
         <maml:name>DomainAdmins</maml:name>
         <maml:description>
-          <maml:para>Gets the Domain Admins group principals for the domain name(s) specified by this parameter.</maml:para>
+          <maml:para>Gets Domain Admins group principal(s) for the domain name(s) specified by this parameter.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
@@ -1929,7 +1930,7 @@
     </command:returnValues>
     <maml:alertSet>
       <maml:alert>
-        <maml:para></maml:para>
+        <maml:para>New-NetLocalGroup does not create domain local security groups.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -2596,7 +2597,7 @@
     </command:returnValues>
     <maml:alertSet>
       <maml:alert>
-        <maml:para></maml:para>
+        <maml:para>New-NetLocalUser does not create domain user accounts.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -2878,6 +2879,7 @@
     </command:returnValues>
     <maml:alertSet>
       <maml:alert>
+        <maml:para>Remove-NetLocalGroup does not remove domain local security groups.</maml:para>
         <maml:para>Remove-NetLocalGroup prompts for confirmation by default. To bypass the confirmation prompt, specify '-Confirm:$false'.</maml:para>
       </maml:alert>
     </maml:alertSet>
@@ -3185,7 +3187,7 @@
     </command:returnValues>
     <maml:alertSet>
       <maml:alert>
-        <maml:para></maml:para>
+        <maml:para>Remove-NetLocalGroupMember does not remove members from domain local security groups.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -3467,6 +3469,7 @@
     </command:returnValues>
     <maml:alertSet>
       <maml:alert>
+        <maml:para>Remove-NetLocalUser does not remove domain user accounts.</maml:para>
         <maml:para>Remove-NetLocalUser prompts for confirmation by default. To bypass the confirmation prompt, specify '-Confirm:$false'.</maml:para>
       </maml:alert>
     </maml:alertSet>
@@ -3790,7 +3793,7 @@
     </command:returnValues>
     <maml:alertSet>
       <maml:alert>
-        <maml:para></maml:para>
+        <maml:para>Rename-NetLocalGroup does not rename domain local security groups.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -4113,7 +4116,7 @@
     </command:returnValues>
     <maml:alertSet>
       <maml:alert>
-        <maml:para></maml:para>
+        <maml:para>Rename-NetLocalUser does not rename domain user accounts.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -4133,11 +4136,11 @@
       <command:verb>Set</command:verb>
       <command:noun>NetLocalAccountPolicy</command:noun>
       <maml:description>
-        <maml:para>Sets account and password policy information.</maml:para>
+        <maml:para>Sets local account and password policies.</maml:para>
       </maml:description>
     </command:details>
     <maml:description>
-      <maml:para>Sets account and password policy information on one or more computers.</maml:para>
+      <maml:para>Sets local account and password policies on one or more computers.</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
@@ -4145,7 +4148,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="0" aliases="none">
           <maml:name>ComputerName</maml:name>
           <maml:description>
-            <maml:para>Specifies one or more computer names. Wildcards are not permitted. Omit this parameter to set account and password policy information for the current computer.</maml:para>
+            <maml:para>Specifies one or more computer names. Wildcards are not permitted. Omit this parameter to set local account and password policies on the current computer.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
           <dev:type>
@@ -4157,7 +4160,7 @@
         <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>ForceLogoffMinutes</maml:name>
           <maml:description>
-            <maml:para>Specifies the number of minutes after the end of the user's logon hours after which the user is logged off. Valid values for this parameter are 0 through 999. A value of zero indicates that the user will be logged off immediately when the user's logon hours expire. Specify -NoForceLogoff instead of this parameter to disable forced logoffs.</maml:para>
+            <maml:para>Specifies the number of minutes after the end of a user account's valid logon hours a user account's Server Message Block (SMB) network client sessions are forcibly disconnected. Valid values for this parameter are 0 through 71539200 (828 days). A value of 0 specifies that the user account's SMB network client sessions will be forcibly disconnected immediately when the user account's logon hours expire. It is recommended to use a value of 0 because a non-zero value will not reflect the policy accurately in the Group Policy Editor. Specify -NoForceLogoff instead of this parameter to prevent user accounts' SMB network client sessions from being forcibly disconnected.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
           <dev:type>
@@ -4194,7 +4197,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="0" aliases="none">
           <maml:name>ComputerName</maml:name>
           <maml:description>
-            <maml:para>Specifies one or more computer names. Wildcards are not permitted. Omit this parameter to set account and password policy information for the current computer.</maml:para>
+            <maml:para>Specifies one or more computer names. Wildcards are not permitted. Omit this parameter to set local account and password policies on the current computer.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
           <dev:type>
@@ -4206,7 +4209,7 @@
         <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>LockoutDurationMinutes</maml:name>
           <maml:description>
-            <maml:para>Specifies the number of minutes a locked account remains locked before it is automatically unlocked. Valid values are 0 through 99999. Specify zero if the account is to remain locked out indefinitely until an administrator unlocks it. This parameter must be greater than or equal to the -LockoutObservationMinutes parameter. A value of zero is not recommended due to potential denial-of-service.</maml:para>
+            <maml:para>Specifies the number of minutes a locked account remains locked before it is automatically unlocked. Valid values are 0 through 99999. A value of 0 specifies that the account is to remain locked out indefinitely until an administrator unlocks it. This parameter must either be 0 or greater than or equal to the -LockoutObservationMinutes parameter. A value of 0 is not recommended due to potential denial of service.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
           <dev:type>
@@ -4218,7 +4221,7 @@
         <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>LockoutObservationMinutes</maml:name>
           <maml:description>
-            <maml:para>Specifies the number of minutes that can elapse between any two failed logon attempts before lockout occurs. Valid values are 1 through 99999. This parameter must be less than or equal to the -LockoutDurationMinutes parameter.</maml:para>
+            <maml:para>Specifies the number of minutes that must elapse after a failed logon attempt before the failed logon attempt counter is reset to 0. Valid values are 1 through 99999. This parameter must be less than or equal to the -LockoutDurationMinutes parameter.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
           <dev:type>
@@ -4230,7 +4233,7 @@
         <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>LockoutThresholdCount</maml:name>
           <maml:description>
-            <maml:para>Specifies the number of invalid password authentications that can occur before an account is locked out. Valid values for this parameter are 1 through 999. Specify -NoAccountLockout instead of this parameter to disable account lockouts.</maml:para>
+            <maml:para>Specifies the number of failed logon attempts that can occur before an account is locked out. Valid values for this parameter are 1 through 999. Specify -NoAccountLockout instead of this parameter to disable account lockouts.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
           <dev:type>
@@ -4267,7 +4270,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="0" aliases="none">
           <maml:name>ComputerName</maml:name>
           <maml:description>
-            <maml:para>Specifies one or more computer names. Wildcards are not permitted. Omit this parameter to set account and password policy information for the current computer.</maml:para>
+            <maml:para>Specifies one or more computer names. Wildcards are not permitted. Omit this parameter to set local account and password policies on the current computer.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
           <dev:type>
@@ -4316,7 +4319,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="0" aliases="none">
           <maml:name>ComputerName</maml:name>
           <maml:description>
-            <maml:para>Specifies one or more computer names. Wildcards are not permitted. Omit this parameter to set account and password policy information for the current computer.</maml:para>
+            <maml:para>Specifies one or more computer names. Wildcards are not permitted. Omit this parameter to set local account and password policies on the current computer.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
           <dev:type>
@@ -4328,7 +4331,7 @@
         <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>MinimumPasswordAgeDays</maml:name>
           <maml:description>
-            <maml:para>Specifies the minimum number of days that can elapse between the time a password changes and when it can be changed again. Valid values for this paramter are 0 through 999. A value of zero indicates that no delay is required between password changes. This parameter must be less than or equal to the maximum password age.</maml:para>
+            <maml:para>Specifies the number of days that a password must be used before it can be changed. Valid values for this paramter are 0 through 999. A value of 0 specifies that no delay is required between password changes. This parameter must be less than or equal to the maximum password age.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
           <dev:type>
@@ -4365,7 +4368,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="0" aliases="none">
           <maml:name>ComputerName</maml:name>
           <maml:description>
-            <maml:para>Specifies one or more computer names. Wildcards are not permitted. Omit this parameter to set account and password policy information for the current computer.</maml:para>
+            <maml:para>Specifies one or more computer names. Wildcards are not permitted. Omit this parameter to set local account and password policies on the current computer.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
           <dev:type>
@@ -4414,7 +4417,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="0" aliases="none">
           <maml:name>ComputerName</maml:name>
           <maml:description>
-            <maml:para>Specifies one or more computer names. Wildcards are not permitted. Omit this parameter to set account and password policy information for the current computer.</maml:para>
+            <maml:para>Specifies one or more computer names. Wildcards are not permitted. Omit this parameter to set local account and password policies on the current computer.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
           <dev:type>
@@ -4426,7 +4429,7 @@
         <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>NoAccountLockout</maml:name>
           <maml:description>
-            <maml:para>Specifies that accounts do not lock out, regardless of how many invalid authentications occur.</maml:para>
+            <maml:para>sSpecifies that user accounts do not lock out, regardless of the number of failed logon attempts.</maml:para>
           </maml:description>
           <dev:type>
             <maml:name>SwitchParameter</maml:name>
@@ -4462,7 +4465,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="0" aliases="none">
           <maml:name>ComputerName</maml:name>
           <maml:description>
-            <maml:para>Specifies one or more computer names. Wildcards are not permitted. Omit this parameter to set account and password policy information for the current computer.</maml:para>
+            <maml:para>Specifies one or more computer names. Wildcards are not permitted. Omit this parameter to set local account and password policies on the current computer.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
           <dev:type>
@@ -4474,7 +4477,7 @@
         <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>NoForceLogoff</maml:name>
           <maml:description>
-            <maml:para>Specifies that accounts are not forced to log off when logon hours expire.</maml:para>
+            <maml:para>Prevents user accounts' Server Message Block (SMB) network client sessions from being forcibly disconnected after valid logon hours.</maml:para>
           </maml:description>
           <dev:type>
             <maml:name>SwitchParameter</maml:name>
@@ -4510,7 +4513,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="0" aliases="none">
           <maml:name>ComputerName</maml:name>
           <maml:description>
-            <maml:para>Specifies one or more computer names. Wildcards are not permitted. Omit this parameter to set account and password policy information for the current computer.</maml:para>
+            <maml:para>Specifies one or more computer names. Wildcards are not permitted. Omit this parameter to set local account and password policies on the current computer.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
           <dev:type>
@@ -4522,7 +4525,7 @@
         <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
           <maml:name>PasswordHistoryCount</maml:name>
           <maml:description>
-            <maml:para>Specifies the number of unique new passwords that have to be associated with a user account before an old password can be reused. Valid values for this parameter are 0 through 8. Specify zero to disable the password history (i.e., old passwords can be reused immediately).</maml:para>
+            <maml:para>Specifies the number of unique new passwords that have to be associated with a user account before an old password can be reused. Valid values for this parameter are 0 through 24. Specify 0 to disable the password history (i.e., old passwords can be reused immediately).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
           <dev:type>
@@ -4559,7 +4562,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="0" aliases="none">
           <maml:name>ComputerName</maml:name>
           <maml:description>
-            <maml:para>Specifies one or more computer names. Wildcards are not permitted. Omit this parameter to set account and password policy information for the current computer.</maml:para>
+            <maml:para>Specifies one or more computer names. Wildcards are not permitted. Omit this parameter to set local account and password policies on the current computer.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
           <dev:type>
@@ -4607,7 +4610,7 @@
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName, ByValue)" position="0" aliases="none">
         <maml:name>ComputerName</maml:name>
         <maml:description>
-          <maml:para>Specifies one or more computer names. Wildcards are not permitted. Omit this parameter to set account and password policy information for the current computer.</maml:para>
+          <maml:para>Specifies one or more computer names. Wildcards are not permitted. Omit this parameter to set local account and password policies on the current computer.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
@@ -4619,7 +4622,7 @@
       <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
         <maml:name>ForceLogoffMinutes</maml:name>
         <maml:description>
-          <maml:para>Specifies the number of minutes after the end of the user's logon hours after which the user is logged off. Valid values for this parameter are 0 through 999. A value of zero indicates that the user will be logged off immediately when the user's logon hours expire. Specify -NoForceLogoff instead of this parameter to disable forced logoffs.</maml:para>
+          <maml:para>Specifies the number of minutes after the end of a user account's valid logon hours a user account's Server Message Block (SMB) network client sessions are forcibly disconnected. Valid values for this parameter are 0 through 71539200 (828 days). A value of 0 specifies that the user account's SMB network client sessions will be forcibly disconnected immediately when the user account's logon hours expire. It is recommended to use a value of 0 because a non-zero value will not reflect the policy accurately in the Group Policy Editor. Specify -NoForceLogoff instead of this parameter to prevent user accounts' SMB network client sessions from being forcibly disconnected.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
         <dev:type>
@@ -4631,7 +4634,7 @@
       <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
         <maml:name>LockoutDurationMinutes</maml:name>
         <maml:description>
-          <maml:para>Specifies the number of minutes a locked account remains locked before it is automatically unlocked. Valid values are 0 through 99999. Specify zero if the account is to remain locked out indefinitely until an administrator unlocks it. This parameter must be greater than or equal to the -LockoutObservationMinutes parameter. A value of zero is not recommended due to potential denial-of-service.</maml:para>
+          <maml:para>Specifies the number of minutes a locked account remains locked before it is automatically unlocked. Valid values are 0 through 99999. A value of 0 specifies that the account is to remain locked out indefinitely until an administrator unlocks it. This parameter must either be 0 or greater than or equal to the -LockoutObservationMinutes parameter. A value of 0 is not recommended due to potential denial of service.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
         <dev:type>
@@ -4643,7 +4646,7 @@
       <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
         <maml:name>LockoutObservationMinutes</maml:name>
         <maml:description>
-          <maml:para>Specifies the number of minutes that can elapse between any two failed logon attempts before lockout occurs. Valid values are 1 through 99999. This parameter must be less than or equal to the -LockoutDurationMinutes parameter.</maml:para>
+          <maml:para>Specifies the number of minutes that must elapse after a failed logon attempt before the failed logon attempt counter is reset to 0. Valid values are 1 through 99999. This parameter must be less than or equal to the -LockoutDurationMinutes parameter.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
         <dev:type>
@@ -4655,7 +4658,7 @@
       <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
         <maml:name>LockoutThresholdCount</maml:name>
         <maml:description>
-          <maml:para>Specifies the number of invalid password authentications that can occur before an account is locked out. Valid values for this parameter are 1 through 999. Specify -NoAccountLockout instead of this parameter to disable account lockouts.</maml:para>
+          <maml:para>Specifies the number of failed logon attempts that can occur before an account is locked out. Valid values for this parameter are 1 through 999. Specify -NoAccountLockout instead of this parameter to disable account lockouts.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
         <dev:type>
@@ -4679,7 +4682,7 @@
       <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
         <maml:name>MinimumPasswordAgeDays</maml:name>
         <maml:description>
-          <maml:para>Specifies the minimum number of days that can elapse between the time a password changes and when it can be changed again. Valid values for this paramter are 0 through 999. A value of zero indicates that no delay is required between password changes. This parameter must be less than or equal to the maximum password age.</maml:para>
+          <maml:para>Specifies the number of days that a password must be used before it can be changed. Valid values for this paramter are 0 through 999. A value of 0 specifies that no delay is required between password changes. This parameter must be less than or equal to the maximum password age.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
         <dev:type>
@@ -4703,7 +4706,7 @@
       <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
         <maml:name>NoAccountLockout</maml:name>
         <maml:description>
-          <maml:para>Specifies that accounts do not lock out, regardless of how many invalid authentications occur.</maml:para>
+          <maml:para>sSpecifies that user accounts do not lock out, regardless of the number of failed logon attempts.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
         <dev:type>
@@ -4715,7 +4718,7 @@
       <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
         <maml:name>NoForceLogoff</maml:name>
         <maml:description>
-          <maml:para>Specifies that accounts are not forced to log off when logon hours expire.</maml:para>
+          <maml:para>Prevents user accounts' Server Message Block (SMB) network client sessions from being forcibly disconnected after valid logon hours.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
         <dev:type>
@@ -4727,7 +4730,7 @@
       <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
         <maml:name>PasswordHistoryCount</maml:name>
         <maml:description>
-          <maml:para>Specifies the number of unique new passwords that have to be associated with a user account before an old password can be reused. Valid values for this parameter are 0 through 8. Specify zero to disable the password history (i.e., old passwords can be reused immediately).</maml:para>
+          <maml:para>Specifies the number of unique new passwords that have to be associated with a user account before an old password can be reused. Valid values for this parameter are 0 through 24. Specify 0 to disable the password history (i.e., old passwords can be reused immediately).</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
         <dev:type>
@@ -4795,7 +4798,10 @@
     </command:returnValues>
     <maml:alertSet>
       <maml:alert>
+        <maml:para>Set-NetLocalAccountPolicy does not set domain account or password policies.</maml:para>
         <maml:para>Set-NetLocalAccountPolicy prompts for confirmation by default. To bypass the confirmation prompt, specify '-Confirm:$false'.</maml:para>
+        <maml:para>It is recommended to use a value of 0 for the -ForceLogoffMinutes parameter because a non-zero value will not reflect the policy accurately in the Group Policy Editor.</maml:para>
+        <maml:para>It is not recommended to use a value of 0 for the -LockoutDurationMinutes parameter due to potential denial of service.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -4803,14 +4809,14 @@
         <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
         <dev:code>PS &gt; Set-NetLocalAccountPolicy -PasswordsNeverExpire</dev:code>
         <dev:remarks>
-          <maml:para>Sets passwords not to expire in the password policy on the current computer. The command will prompt for confirmation.</maml:para>
+          <maml:para>For the current computer, specifies that local user account passwords do not expire. The command will prompt for confirmation.</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
         <dev:code>PS &gt; Set-NetLocalAccountPolicy -LockoutThresholdCount 5 -LockoutDurationMinutes 2 -LockoutObservationMinutes 1 -Confirm:$false</dev:code>
         <dev:remarks>
-          <maml:para>For the current computer, specifies that accounts lock out after 5 invalid attempts, remain locked for 2 minutes, and that 1 minute can elapse between any two failed logon attempts before lockout occurs. The command will not prompt for confirmation.</maml:para>
+          <maml:para>For the current computer, specifies that local user accounts lock out after 5 invalid attempts, remain locked for 2 minutes, and that 1 minute can elapse between any two failed logon attempts before lockout occurs. The command will not prompt for confirmation.</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>
@@ -5125,7 +5131,7 @@
     </command:returnValues>
     <maml:alertSet>
       <maml:alert>
-        <maml:para></maml:para>
+        <maml:para>Set-NetLocalGroup does not change domain local security groups.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -6021,7 +6027,7 @@
     </command:returnValues>
     <maml:alertSet>
       <maml:alert>
-        <maml:para></maml:para>
+        <maml:para>Set-NetLocalUser does not change domain user accounts.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>

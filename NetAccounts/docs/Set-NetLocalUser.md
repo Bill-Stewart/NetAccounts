@@ -388,5 +388,6 @@ You can pipe SecurityIdentifier objects to specify security IDs of local user ac
 Returns no output.
 
 ## NOTES
+Set-NetLocalUser does not change domain user accounts.
 
 ## RELATED LINKS

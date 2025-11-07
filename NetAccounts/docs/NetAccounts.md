@@ -2,7 +2,7 @@
 Module Name: NetAccounts
 Module Guid: 31df095b-3e4b-485c-ad3a-b12e746e0bf6
 Download Help Link: {{ Update Download Link }}
-Help Version: 0.0.4
+Help Version: 0.0.5
 Locale: en-US
 ---
 
@@ -21,7 +21,7 @@ Disables local user accounts.
 Enables local user accounts.
 
 ### [Get-NetLocalAccountPolicy](Get-NetLocalAccountPolicy.md)
-Gets account and password policy information.
+Gets local account and password policy information.
 
 ### [Get-NetLocalAdminGroup](Get-NetLocalAdminGroup.md)
 Gets the local Administrators security group.
@@ -63,7 +63,7 @@ Renames a local security group.
 Renames a local user account.
 
 ### [Set-NetLocalAccountPolicy](Set-NetLocalAccountPolicy.md)
-Sets account and password policy information.
+Sets local account and password policies.
 
 ### [Set-NetLocalGroup](Set-NetLocalGroup.md)
 Changes local security groups.

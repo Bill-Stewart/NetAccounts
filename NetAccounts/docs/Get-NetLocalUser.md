@@ -108,5 +108,6 @@ You can pipe SecurityIdentifier objects to specify security IDs for local user a
 Outputs NetLocalUserPrincipal objects.
 
 ## NOTES
+Get-NetLocalUser does not get domain user accounts.
 
 ## RELATED LINKS

@@ -154,6 +154,8 @@ You can pipe SecurityIdentifier objects to specify security IDs for local user a
 Returns no output.
 
 ## NOTES
+Remove-NetLocalUser does not remove domain user accounts.
+
 Remove-NetLocalUser prompts for confirmation by default. To bypass the confirmation prompt, specify '-Confirm:$false'.
 
 ## RELATED LINKS

@@ -171,5 +171,6 @@ You can pipe SecurityIdentifier objects to specify security IDs of local securit
 Returns no output.
 
 ## NOTES
+Set-NetLocalGroup does not change domain local security groups.
 
 ## RELATED LINKS

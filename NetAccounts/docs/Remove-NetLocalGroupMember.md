@@ -174,5 +174,6 @@ You can pipe NetPrincipal objects to specify local security group members.
 Returns no output.
 
 ## NOTES
+Remove-NetLocalGroupMember does not remove members from domain local security groups.
 
 ## RELATED LINKS

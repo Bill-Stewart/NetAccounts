@@ -351,5 +351,6 @@ You can pipe a string to specify a local user account name.
 Outputs a NetLocalUserPrincipal object for the local user account.
 
 ## NOTES
+New-NetLocalUser does not create domain user accounts.
 
 ## RELATED LINKS

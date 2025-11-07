@@ -16,7 +16,7 @@ Get-NetLocalAdminUser [[-ComputerName] <String[]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Gets the local Administrator user account.
+Gets the local Administrator user account from one or more computers.
 The security identifier (SID) of a computer's local Administrator user account is the computer's SID with the relative identifier (RID) 500.
 
 ## EXAMPLES
@@ -61,5 +61,6 @@ You can pipe strings to specify computer names.
 Outputs NetLocalUserPrincipal objects.
 
 ## NOTES
+Get-NetLocalAdminUser does not get a domain's Administrator user account.
 
 ## RELATED LINKS

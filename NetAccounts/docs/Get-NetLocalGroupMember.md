@@ -122,5 +122,6 @@ You can pipe SecurityIdentifier objects to specify the local security group SIDs
 Outputs NetPrincipal objects.
 
 ## NOTES
+Get-NetLocalGroupMember does not get members of domain local security groups.
 
 ## RELATED LINKS

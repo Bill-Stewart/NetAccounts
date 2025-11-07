@@ -154,6 +154,8 @@ You can pipe SecurityIdentifier objects to specify security IDs for local securi
 Returns no output.
 
 ## NOTES
+Remove-NetLocalGroup does not remove domain local security groups.
+
 Remove-NetLocalGroup prompts for confirmation by default. To bypass the confirmation prompt, specify '-Confirm:$false'.
 
 ## RELATED LINKS

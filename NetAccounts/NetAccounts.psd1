@@ -1,6 +1,6 @@
 @{
   RootModule = 'NetAccounts.psm1'
-  ModuleVersion = '0.0.4'
+  ModuleVersion = '0.0.5'
   GUID = '31df095b-3e4b-485c-ad3a-b12e746e0bf6'
   Author = 'Bill Stewart'
   CompanyName = 'Bill Stewart'

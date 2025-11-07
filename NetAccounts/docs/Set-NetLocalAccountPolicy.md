@@ -7,7 +7,7 @@ schema: 2.0.0
 # Set-NetLocalAccountPolicy
 
 ## SYNOPSIS
-Sets account and password policy information.
+Sets local account and password policies.
 
 ## SYNTAX
 
@@ -66,7 +66,7 @@ Set-NetLocalAccountPolicy [[-ComputerName] <String[]>] -ForceLogoffMinutes <Int3
 ```
 
 ## DESCRIPTION
-Sets account and password policy information on one or more computers.
+Sets local account and password policies on one or more computers.
 
 ## EXAMPLES
 
@@ -75,21 +75,21 @@ Sets account and password policy information on one or more computers.
 PS > Set-NetLocalAccountPolicy -PasswordsNeverExpire
 ```
 
-Sets passwords not to expire in the password policy on the current computer. The command will prompt for confirmation.
+For the current computer, specifies that local user account passwords do not expire. The command will prompt for confirmation.
 
 ### EXAMPLE 2
 ```
 PS > Set-NetLocalAccountPolicy -LockoutThresholdCount 5 -LockoutDurationMinutes 2 -LockoutObservationMinutes 1 -Confirm:$false
 ```
 
-For the current computer, specifies that accounts lock out after 5 invalid attempts, remain locked for 2 minutes, and that 1 minute can elapse between any two failed logon attempts before lockout occurs. The command will not prompt for confirmation.
+For the current computer, specifies that local user accounts lock out after 5 invalid attempts, remain locked for 2 minutes, and that 1 minute can elapse between any two failed logon attempts before lockout occurs. The command will not prompt for confirmation.
 
 ## PARAMETERS
 
 ### -ComputerName
 Specifies one or more computer names.
 Wildcards are not permitted.
-Omit this parameter to set account and password policy information for the current computer.
+Omit this parameter to set local account and password policies on the current computer.
 
 ```yaml
 Type: String[]
@@ -104,7 +104,7 @@ Accept wildcard characters: False
 ```
 
 ### -ForceLogoffMinutes
-Specifies the number of minutes after the end of the user's logon hours after which the user is logged off. Valid values for this parameter are 0 through 999. A value of zero indicates that the user will be logged off immediately when the user's logon hours expire. Specify -NoForceLogoff instead of this parameter to disable forced logoffs.
+Specifies the number of minutes after the end of a user account's valid logon hours a user account's Server Message Block (SMB) network client sessions are forcibly disconnected. Valid values for this parameter are 0 through 71539200 (828 days). A value of 0 specifies that the user account's SMB network client sessions will be forcibly disconnected immediately when the user account's logon hours expire. It is recommended to use a value of 0 because a non-zero value will not reflect the policy accurately in the Group Policy Editor. Specify -NoForceLogoff instead of this parameter to prevent user accounts' SMB network client sessions from being forcibly disconnected.
 
 ```yaml
 Type: Int32
@@ -119,7 +119,7 @@ Accept wildcard characters: False
 ```
 
 ### -LockoutDurationMinutes
-Specifies the number of minutes a locked account remains locked before it is automatically unlocked. Valid values are 0 through 99999. Specify zero if the account is to remain locked out indefinitely until an administrator unlocks it. This parameter must be greater than or equal to the -LockoutObservationMinutes parameter. A value of zero is not recommended due to potential denial-of-service.
+Specifies the number of minutes a locked account remains locked before it is automatically unlocked. Valid values are 0 through 99999. A value of 0 specifies that the account is to remain locked out indefinitely until an administrator unlocks it. This parameter must either be 0 or greater than or equal to the -LockoutObservationMinutes parameter. A value of 0 is not recommended due to potential denial of service.
 
 ```yaml
 Type: Int32
@@ -134,7 +134,7 @@ Accept wildcard characters: False
 ```
 
 ### -LockoutObservationMinutes
-Specifies the number of minutes that can elapse between any two failed logon attempts before lockout occurs. Valid values are 1 through 99999. This parameter must be less than or equal to the -LockoutDurationMinutes parameter.
+Specifies the number of minutes that must elapse after a failed logon attempt before the failed logon attempt counter is reset to 0. Valid values are 1 through 99999. This parameter must be less than or equal to the -LockoutDurationMinutes parameter.
 
 ```yaml
 Type: Int32
@@ -149,7 +149,7 @@ Accept wildcard characters: False
 ```
 
 ### -LockoutThresholdCount
-Specifies the number of invalid password authentications that can occur before an account is locked out. Valid values for this parameter are 1 through 999. Specify -NoAccountLockout instead of this parameter to disable account lockouts.
+Specifies the number of failed logon attempts that can occur before an account is locked out. Valid values for this parameter are 1 through 999. Specify -NoAccountLockout instead of this parameter to disable account lockouts.
 
 ```yaml
 Type: Int32
@@ -179,7 +179,7 @@ Accept wildcard characters: False
 ```
 
 ### -MinimumPasswordAgeDays
-Specifies the minimum number of days that can elapse between the time a password changes and when it can be changed again. Valid values for this paramter are 0 through 999. A value of zero indicates that no delay is required between password changes. This parameter must be less than or equal to the maximum password age.
+Specifies the number of days that a password must be used before it can be changed. Valid values for this paramter are 0 through 999. A value of 0 specifies that no delay is required between password changes. This parameter must be less than or equal to the maximum password age.
 
 ```yaml
 Type: Int32
@@ -209,7 +209,7 @@ Accept wildcard characters: False
 ```
 
 ### -NoAccountLockout
-Specifies that accounts do not lock out, regardless of how many invalid authentications occur.
+sSpecifies that user accounts do not lock out, regardless of the number of failed logon attempts.
 
 ```yaml
 Type: SwitchParameter
@@ -224,7 +224,7 @@ Accept wildcard characters: False
 ```
 
 ### -NoForceLogoff
-Specifies that accounts are not forced to log off when logon hours expire.
+Prevents user accounts' Server Message Block (SMB) network client sessions from being forcibly disconnected after valid logon hours.
 
 ```yaml
 Type: SwitchParameter
@@ -239,7 +239,7 @@ Accept wildcard characters: False
 ```
 
 ### -PasswordHistoryCount
-Specifies the number of unique new passwords that have to be associated with a user account before an old password can be reused. Valid values for this parameter are 0 through 8. Specify zero to disable the password history (i.e., old passwords can be reused immediately).
+Specifies the number of unique new passwords that have to be associated with a user account before an old password can be reused. Valid values for this parameter are 0 through 24. Specify 0 to disable the password history (i.e., old passwords can be reused immediately).
 
 ```yaml
 Type: Int32
@@ -312,6 +312,12 @@ You can pipe strings to specify computer names.
 Returns no output.
 
 ## NOTES
+Set-NetLocalAccountPolicy does not set domain account or password policies.
+
 Set-NetLocalAccountPolicy prompts for confirmation by default. To bypass the confirmation prompt, specify '-Confirm:$false'.
+
+It is recommended to use a value of 0 for the -ForceLogoffMinutes parameter because a non-zero value will not reflect the policy accurately in the Group Policy Editor.
+
+It is not recommended to use a value of 0 for the -LockoutDurationMinutes parameter due to potential denial of service.
 
 ## RELATED LINKS

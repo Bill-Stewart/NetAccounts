@@ -89,8 +89,8 @@ Accept wildcard characters: False
 ### -Member
 Specifies one or members to add to the local security group.
 You can specify members by name, security identifier (SID), or NetPrincipal objects.
-You can add a local security group as a member of another local security group on the same computer as a nested group, but this does not grant access to members of the nested group.
-For example, adding a local security group to the local Administrators security group on the same computer does not grant administrator access to the members of the nested group.
+You cannot add a local security group as a member of another local security group.
+
 
 ```yaml
 Type: NetPrincipal[]
@@ -178,5 +178,8 @@ You can pipe NetPrincipal objects to specify local security group members.
 Returns no output.
 
 ## NOTES
+Add-NetLocalGroupMember does not add members to domain local security groups.
+
+You cannot add a local security group as a member of another local security group.
 
 ## RELATED LINKS

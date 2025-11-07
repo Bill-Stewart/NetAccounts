@@ -57,7 +57,7 @@ Gets the NetPrincipal object for the Domain Admins group in the FABRIKAM domain.
 ## PARAMETERS
 
 ### -DomainAdmins
-Gets the Domain Admins group principals for the domain name(s) specified by this parameter.
+Gets Domain Admins group principal(s) for the domain name(s) specified by this parameter.
 
 ```yaml
 Type: String[]

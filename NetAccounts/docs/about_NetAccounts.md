@@ -3,8 +3,8 @@
 
 # SHORT DESCRIPTION
 
-Manages local security groups, local user accounts, and account policies on local and remote Windows computers on the Windows platform.
+Manages local security groups, local user accounts, and local account policies on local and remote Windows computers on the Windows platform.
 
 # LONG DESCRIPTION
 
-**NetAccounts** is a Windows-only PowerShell module for managing local security groups, local user accounts, and account policies on the current computer and remote computers. You can use it as a replacement for the Microsoft **LocalAccounts** module and the **net accounts** command if you need to manage local security groups, local user accounts, and account policies on remote computers.
+**NetAccounts** is a Windows-only PowerShell module for managing local security groups, local user accounts, and local account policies on the current computer and remote computers. You can use it as a replacement for the Microsoft **LocalAccounts** module and the **net accounts** command for managing local security groups, local user accounts, and local account policies on remote computers.

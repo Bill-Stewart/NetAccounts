@@ -143,6 +143,7 @@ $ERROR_NONE_MAPPED          = 1332        # 0x534  # No mapping between account 
 $ERROR_NO_SUCH_DOMAIN       = 1355        # 0x54B  # The specified domain either does not exist or could not be contacted
 $ERROR_MEMBER_NOT_IN_ALIAS  = 1377        # 0x561  # The specified account name is not a member of the group
 $ERROR_MEMBER_IN_ALIAS      = 1378        # 0x562  # The specified account name is already a member of the group
+$ERROR_INVALID_MEMBER       = 1388        # 0x56C  # A new member could not be added to a local group because the member has the wrong account type
 $RPC_S_INVALID_NET_ADDR     = 1707        # 0x6AB  # The network address is invalid
 $ERROR_INVALID_TIME         = 1901        # 0x76D  # The specified time is invalid
 $NERR_GroupNotFound         = 2220        # 0x8AC  # The group name could not be found
@@ -184,6 +185,7 @@ $ErrorCodeCategory = @{
   $ERROR_NO_SUCH_DOMAIN       = [Management.Automation.ErrorCategory]::ResourceUnavailable
   $ERROR_MEMBER_NOT_IN_ALIAS  = [Management.Automation.ErrorCategory]::ObjectNotFound
   $ERROR_MEMBER_IN_ALIAS      = [Management.Automation.ErrorCategory]::ResourceExists
+  $ERROR_INVALID_MEMBER       = [Management.Automation.ErrorCategory]::InvalidArgument
   $RPC_S_INVALID_NET_ADDR     = [Management.Automation.ErrorCategory]::ResourceUnavailable
   $ERROR_INVALID_TIME         = [Management.Automation.ErrorCategory]::InvalidArgument
   $NERR_GroupNotFound         = [Management.Automation.ErrorCategory]::ObjectNotFound
@@ -257,9 +259,10 @@ public class NetLocalAccountPolicy
   public uint MinimumPasswordAgeDays;
   public uint MinimumPasswordLength;
   public uint PasswordHistoryCount;
+  public Boolean AccountLockout;
   public uint? LockoutDurationMinutes;
   public uint? LockoutObservationMinutes;
-  public uint LockoutThresholdCount;
+  public uint? LockoutThresholdCount;
 
   public NetLocalAccountPolicy(string ComputerName,
     uint ForceLogoffSeconds,
@@ -291,13 +294,16 @@ public class NetLocalAccountPolicy
       MinimumPasswordAgeSeconds / 86400;
     this.MinimumPasswordLength = MinimumPasswordLength;
     this.PasswordHistoryCount = PasswordHistoryCount;
+    this.AccountLockout = LockoutThresholdCount > 0;
+    // gpedit: lockout duration seconds >= 0xFFFFFFF0 returned as 0
     this.LockoutDurationMinutes = LockoutThresholdCount > 0 ?
-      (LockoutDurationSeconds > 0 ? LockoutDurationSeconds / 60 : 0) :
+      (LockoutDurationSeconds >= 0xFFFFFFF0 ? 0 : LockoutDurationSeconds / 60) :
       (uint?)null;
     this.LockoutObservationMinutes = LockoutThresholdCount > 0 ?
       (LockoutObservationSeconds > 0 ? LockoutObservationSeconds / 60 : 0) :
       (uint?)null;
-    this.LockoutThresholdCount = LockoutThresholdCount;
+    this.LockoutThresholdCount = LockoutThresholdCount > 0 ?
+      LockoutThresholdCount : (uint?)null;
   }
 }
 
@@ -751,7 +757,7 @@ public struct USER_MODALS_INFO_2 {
 }
 
 // [F5E1C3D31AC644ED981EAA159ADDD879.NetAccounts+USER_MODALS_INFO_3]
-// Used by NetUserModalsGet to get account lockout information
+// Used by NetUserModalsGet and NetUserModalsSet
 [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
 public struct USER_MODALS_INFO_3 {
   public uint usrmod3_lockout_duration;
@@ -2406,7 +2412,7 @@ function SetNetLocalAccountPolicy {
     [UInt32]
     $minimumPasswordAgeSeconds,
 
-    [Parameter(ParameterSetName = "OtherPolicies")]
+    [Parameter(ParameterSetName = "ForceLogoffPolicy")]
     [UInt32]
     $forceLogoffSeconds,
 
@@ -2425,12 +2431,18 @@ function SetNetLocalAccountPolicy {
       }
       $null = NetUserModalsSet @params
     }
+    "ForceLogoffPolicy" {
+      $params["forceLogoffSeconds"] = $forceLogoffSeconds
+      if ( ((NetUserModalsSet @params) -eq $ERROR_SUCCESS) -and
+        ($forceLogoffSeconds -lt $TIMEQ_FOREVER) -and ($forceLogoffSeconds -gt 0) ) {
+        Write-Warning $Messages.SetLocalAccountPolicyForceLogoffNonZero
+      }
+    }
     "OtherPolicies" {
       $otherPolicyParams = @(
         "minimumPasswordLength"
         "maximumPasswordAgeSeconds"
         "minimumPasswordAgeSeconds"
-        "forceLogoffSeconds"
         "passwordHistoryCount"
       )
       foreach ( $psBoundParameter in $psBoundParameters.GetEnumerator() ) {
@@ -3061,6 +3073,9 @@ function Add-NetLocalGroupMember {
     elseif ( $PSBoundParameters.ContainsKey("SID") ) {
       $groupPrincipal = Get-NetLocalGroup -SID $SID -ComputerName $params["computerName"]
     }
+    if ( $params["action"] -eq "Add" ) {
+      $invalidTypes = @([NetPrincipalType]::BuiltinGroup,[NetPrincipalType]::LocalGroup)
+    }
   }
   process {
     if ( -not $groupPrincipal ) { return }
@@ -3069,6 +3084,10 @@ function Add-NetLocalGroupMember {
     foreach ( $memberItem in $Member ) {
       $memberPrincipal = ResolvePrincipal $memberItem $groupPrincipal.ComputerName
       if ( $null -eq $memberPrincipal ) { continue }
+      if ( ($params["action"] -eq "Add") -and ($invalidTypes -contains $memberPrincipal.Type) ) {
+        WriteCustomError $ERROR_INVALID_MEMBER $memberPrincipal.Name -scope 1
+        continue
+      }
       $messageName = "{0}LocalGroupMember" -f $params["action"]
       $action = $Messages[$messageName] -f (ResolveAccountName ("{0}\{1}" -f $memberPrincipal.AuthorityName,$memberPrincipal.Name))
       if ( $PSCmdlet.ShouldProcess($target,$action) ) {
@@ -3128,6 +3147,9 @@ function Remove-NetLocalGroupMember {
     elseif ( $PSBoundParameters.ContainsKey("SID") ) {
       $groupPrincipal = Get-NetLocalGroup -SID $SID -ComputerName $params["computerName"]
     }
+    if ( $params["action"] -eq "Add" ) {
+      $invalidTypes = @([NetPrincipalType]::BuiltinGroup,[NetPrincipalType]::LocalGroup)
+    }
   }
   process {
     if ( -not $groupPrincipal ) { return }
@@ -3136,6 +3158,10 @@ function Remove-NetLocalGroupMember {
     foreach ( $memberItem in $Member ) {
       $memberPrincipal = ResolvePrincipal $memberItem $groupPrincipal.ComputerName
       if ( $null -eq $memberPrincipal ) { continue }
+      if ( ($params["action"] -eq "Add") -and ($invalidTypes -contains $memberPrincipal.Type) ) {
+        WriteCustomError $ERROR_INVALID_MEMBER $memberPrincipal.Name -scope 1
+        continue
+      }
       $messageName = "{0}LocalGroupMember" -f $params["action"]
       $action = $Messages[$messageName] -f (ResolveAccountName ("{0}\{1}" -f $memberPrincipal.AuthorityName,$memberPrincipal.Name))
       if ( $PSCmdlet.ShouldProcess($target,$action) ) {
@@ -3900,7 +3926,7 @@ function Set-NetLocalAccountPolicy {
 
     [Parameter(ParameterSetName = "PasswordHistoryCount",Mandatory)]
     [Int]
-    [ValidateRange(0,8)]
+    [ValidateRange(0,24)]
     $PasswordHistoryCount,
 
     [Parameter(ParameterSetName = "NoForceLogoff",Mandatory)]
@@ -3909,7 +3935,7 @@ function Set-NetLocalAccountPolicy {
 
     [Parameter(ParameterSetName = "ForceLogoff",Mandatory)]
     [Int]
-    [ValidateRange(0,999)]
+    [ValidateRange(0,71539200)]
     $ForceLogoffMinutes
   )
   begin {
@@ -3929,11 +3955,13 @@ function Set-NetLocalAccountPolicy {
           $params["lockoutThresholdCount"] = 0
         }
         "AccountLockout" {
-          if ( $LockoutDurationMinutes -lt $LockoutObservationMinutes ) {
+          # gpedit: 0 for lockout duration means "indefinite"
+          if ( ($LockoutDurationMinutes -gt 0) -and ($LockoutDurationMinutes -lt $LockoutObservationMinutes) ) {
             WriteCustomError $ERROR_INVALID_PARAMETER $Messages.SetLocalAccountPolicyParamErrorLockout -scope 1 -terminatingError
             return
           }
-          $params["lockoutDurationSeconds"] = $LockoutDurationMinutes * 60
+          # gpedit: setting 0 lockout duration sends 0xFFFFFFFF to API
+          $params["lockoutDurationSeconds"] = (($LockoutDurationMinutes * 60),$TIMEQ_FOREVER)[$LockoutDurationMinutes -eq 0]
           $params["lockoutObservationSeconds"] = $LockoutObservationMinutes * 60
           $params["lockoutThresholdCount"] = $LockoutThresholdCount
         }

@@ -29,6 +29,9 @@
                 <PropertyName>PasswordHistoryCount</PropertyName>
               </ListItem>
               <ListItem>
+                <PropertyName>AccountLockout</PropertyName>
+              </ListItem>
+              <ListItem>
                 <PropertyName>LockoutThresholdCount</PropertyName>
               </ListItem>
               <ListItem>

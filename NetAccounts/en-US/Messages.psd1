@@ -13,6 +13,7 @@ SetLocalGroup = Modify local security group
 SetLocalUserParamErrorAccountExpiration = You cannot specify both -AccountExpires and -AccountNeverExpires.
 SetLocalUserParamErrorPassword = You cannot specify "-ChangePasswordAtLogon $true" with either "-PasswordNeverExpires $true" or "-UserMayChangePassword $false".
 SetLocalUser = Modify local user account
-SetLocalAccountPolicyParamErrorLockout = -LockoutDurationMinutes must be greater than or equal to -LockoutObservationMinutes.
+SetLocalAccountPolicyForceLogoffNonZero = A non-zero value for the -ForceLogoffMinutes parameter will not reflect the policy accurately in the Group Policy Editor. It is recommended to use a value of 0 for this parameter.
+SetLocalAccountPolicyParamErrorLockout = -LockoutDurationMinutes must either be 0 or greater than or equal to -LockoutObservationMinutes.
 SetLocalAccountPolicy = Modify local account policy
 '@

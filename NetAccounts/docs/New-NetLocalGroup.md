@@ -121,5 +121,6 @@ You can a string to specify a local security group name.
 Outputs a NetLocalGroupPrincipal object for the group.
 
 ## NOTES
+New-NetLocalGroup does not create domain local security groups.
 
 ## RELATED LINKS

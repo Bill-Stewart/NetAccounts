@@ -101,5 +101,6 @@ You can pipe SecurityIdentifier objects to specify security IDs for local securi
 Outputs NetLocalGroupPrincipal objects.
 
 ## NOTES
+Get-NetLocalGroup does not get domain local security groups.
 
 ## RELATED LINKS

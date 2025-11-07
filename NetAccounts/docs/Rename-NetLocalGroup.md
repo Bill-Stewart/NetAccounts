@@ -171,5 +171,6 @@ You can pipe a SecurityIdentifier object to specify the security ID of the local
 Returns no output.
 
 ## NOTES
+Rename-NetLocalGroup does not rename domain local security groups.
 
 ## RELATED LINKS
